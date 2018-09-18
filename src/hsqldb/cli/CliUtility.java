@@ -46,30 +46,44 @@ public class CliUtility {
                     + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.");
             return;
         }
-        
-        switch(args[COMMAND]){
-            case "deploy":
-                sendDeploy(args);
-                break;
-            case "start":
-                startManager();
-                break;
-            case "stop":
-                sendStop();
-                break;
-            case "list":
-                sendList();
-                break;
-            case "status":
-                if(managerAvailabilityCheck())
-                    System.out.println("The manager IS RUNNING");
-                else
-                    System.out.println("The manager IS NOT RUNNING");
-                break;
-            case "sqltool":
-                openSqlTool(args);
-                break;
+        if(args.length > 0){
+            switch(args[COMMAND]){
+                case "deploy":
+                    sendDeploy(args);
+                    return;
+                case "undeploy":
+                    sendUndeploy(args);
+                    return;
+                case "start":
+                    startManager();
+                    return;
+                case "stop":
+                    sendStop();
+                    return;
+                case "list":
+                    sendList();
+                    return;
+                case "status":
+                    if(managerAvailabilityCheck())
+                        System.out.println("The manager IS RUNNING");
+                    else
+                        System.out.println("The manager IS NOT RUNNING");
+                    return;
+                case "sqltool":
+                    openSqlTool(args);
+                    return;
+            }
         }
+        System.out.println("Send commands to the HSQL Databases Manager.\n"
+                + "    Usage:\n"
+                + "    start               -  Start the HSQLDB Manager, running all the deployed databases.\n"
+                + "    stop                -  Stop all the running HSQLDB instances.\n"
+                + "    status              -  Display if the manager is currently running.\n"
+                + "    deploy <db_name>    -  Deploy an database with the provided name, storing its files in the current\n"
+                + "                           CLI location.\n"
+                + "    undeploy <db_name>  -  Undeploy the database with the provided name, keeping its files as it is.\n"
+                + "    list                -  List all the currently deployed and running databases.\n"
+                + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.");
     }
 
     private static void sendDeploy(String[] args) {
@@ -86,6 +100,18 @@ public class CliUtility {
             System.out.println("Coudn't create the directory to the database files, check if the name is valid.");
         }
         String resp = sendCommand(new Command("deploy", args[FIRST_ARG], target.getAbsolutePath()));
+        if(resp == null) return;
+        System.out.println(resp);
+    }
+
+    private static void sendUndeploy(String[] args) {
+        if(args.length < 2){
+            System.out.println("Undeploy the database with the provided name, keeping its files as it is.\n"
+                    + "    Usage:\n"
+                    + "    undeploy <db_name>");
+            return;
+        }
+        String resp = sendCommand(new Command("undeploy", args[FIRST_ARG]));
         if(resp == null) return;
         System.out.println(resp);
     }
@@ -183,6 +209,7 @@ public class CliUtility {
         }
         
         String url = sendCommand(new Command("query_url", args[FIRST_ARG])).trim();
+        if(url == null) return;
         if(url.equals("none")){
             System.err.println("There's no deployed database with the name '"+args[FIRST_ARG]+"'.");
             return;

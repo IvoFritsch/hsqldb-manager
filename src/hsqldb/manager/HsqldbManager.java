@@ -122,6 +122,9 @@ public class HsqldbManager extends AbstractHandler{
             case "deploy":
                 deployHsqlDatabase(c);
                 break;
+            case "undeploy":
+                undeployHsqlDatabase(c);
+                break;
             case "list":
                 if(deployedDbs.isEmpty()){
                     sendResponse("There's no deployed database.");
@@ -195,16 +198,15 @@ public class HsqldbManager extends AbstractHandler{
         updateDeployedDbsFile();
     }
     
-    private static void undeployHsqlDatabase(String name) throws Exception{
-        if(!deployedDbs.containsKey(name)){
-            sendResponse("There's no deployed database with the name '"+name+"'.");
+    private static void undeployHsqlDatabase(Command c){
+        if(!deployedDbs.containsKey(c.getName())){
+            sendResponse("There's no deployed database with the name '"+c.getName()+"'.");
             return;
         }
-        sendResponse("Undeploying database "+name+"...");
-        deployedDbs.remove(name);
+        deployedDbs.remove(c.getName());
         shutdownServer();
         startHsqlServer();
-        sendResponse("Database "+name+" was succesfully removed from de deployed databases...");
+        sendResponse("Database "+c.getName()+" was succesfully removed from de deployed databases...");
         updateDeployedDbsFile();
     }
     
