@@ -122,6 +122,24 @@ public class HsqldbManager extends AbstractHandler{
             case "deploy":
                 deployHsqlDatabase(c);
                 break;
+            case "list":
+                if(deployedDbs.isEmpty()){
+                    sendResponse("There's no deployed database.");
+                    return;
+                }
+                sendResponse("Here's the list of names for currently deployed databases:");
+                deployedDbs.forEach((n,dd) -> {
+                    sendResponse("   - "+dd.name);
+                });
+                break;
+            case "query_url":
+                DatabaseDescriptor dd = deployedDbs.get(c.getName());
+                if(dd == null){
+                    sendResponse("none");
+                    return;
+                }
+                sendResponse("jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName());
+                break;
             case "stop":
                 accepting = false;
                 ScheduledExecutorService parador = Executors.newScheduledThreadPool(1);

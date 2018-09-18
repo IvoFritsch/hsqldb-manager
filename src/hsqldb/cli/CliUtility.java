@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.hsqldb.cmdline.SqlTool;
 
 /**
  *
@@ -41,7 +42,8 @@ public class CliUtility {
                     + "    deploy <db_name>    -  Deploy an database with the provided name, storing its files in the current\n"
                     + "                           CLI location.\n"
                     + "    undeploy <db_name>  -  Undeploy the database with the provided name, keeping its files as it is.\n"
-                    + "    list_deployed       -  List all the currently deployed and running databases.");
+                    + "    list                -  List all the currently deployed and running databases.\n"
+                    + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.");
             return;
         }
         
@@ -55,11 +57,17 @@ public class CliUtility {
             case "stop":
                 sendStop();
                 break;
+            case "list":
+                sendList();
+                break;
             case "status":
                 if(managerAvailabilityCheck())
                     System.out.println("The manager IS RUNNING");
                 else
                     System.out.println("The manager IS NOT RUNNING");
+                break;
+            case "sqltool":
+                openSqlTool(args);
                 break;
         }
     }
@@ -77,8 +85,9 @@ public class CliUtility {
         if(!target.exists()) {
             System.out.println("Coudn't create the directory to the database files, check if the name is valid.");
         }
-        sendCommand(new Command("deploy", args[FIRST_ARG], target.getAbsolutePath()));
-        
+        String resp = sendCommand(new Command("deploy", args[FIRST_ARG], target.getAbsolutePath()));
+        if(resp == null) return;
+        System.out.println(resp);
     }
     
     private static void sendStop() {
@@ -100,17 +109,21 @@ public class CliUtility {
         }
         try {
             new ProcessBuilder("java", "-cp", jarPath, "hsqldb.manager.HsqldbManager").start();
-            System.out.println("Manager started succesfully.");
+            Thread.sleep(1000);
+            if(managerAvailabilityCheck())
+                System.out.println("Manager started succesfully.");
+            else
+                System.err.println("Manager couldn't start.");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
     
     // HTTP GET request
-    private static void sendCommand(Command c){
+    private static String sendCommand(Command c){
         if(!managerAvailabilityCheck()){
             System.err.println("The manager is not running, start it with the 'start' command");
-            return;
+            return null;
         }
 
         String url = "http://localhost:"+HsqldbManager.MANAGER_PORT+"/";
@@ -121,14 +134,13 @@ public class CliUtility {
             obj = new URL(url);
             con = (HttpURLConnection) obj.openConnection();
         } catch (Exception ex) {
-            return;
+            return null;
         }
         try {
             // optional default is GET
             con.setRequestMethod("POST");
         } catch (ProtocolException ex) {
         }
-
         con.setDoOutput(true);
         try {
             DataOutputStream wr = new DataOutputStream(con.getOutputStream());
@@ -147,13 +159,11 @@ public class CliUtility {
                 response.append("\n");
             }
             in.close();
-            //print result
-            System.out.println(response.toString());
+            return response.toString();
         } catch (IOException ex) {
             System.err.println("Could not communicate with the HSQLDB Manager, it's probably not running, start it with the 'start' command");
         }
-
-
+        return null;
     }
     public static boolean managerAvailabilityCheck() { 
         try (Socket s = new Socket("localhost", HsqldbManager.MANAGER_PORT)) {
@@ -162,5 +172,29 @@ public class CliUtility {
             /* ignore */
         }
         return false;
+    }
+
+    private static void openSqlTool(String[] args) {
+        if(args.length < 2){
+            System.out.println("Open the SQL access tool in the provided database.\n"
+                    + "    Usage:\n"
+                    + "    sqltool <db_name>");
+            return;
+        }
+        
+        String url = sendCommand(new Command("query_url", args[FIRST_ARG])).trim();
+        if(url.equals("none")){
+            System.err.println("There's no deployed database with the name '"+args[FIRST_ARG]+"'.");
+            return;
+        }
+        System.setProperty("sqltool.REMOVE_EMPTY_VARS", "false");
+        SqlTool.main(new String[]{"--inlineRc=url="+url+",user=SA"});
+    }
+
+    private static void sendList() {
+        String list = sendCommand(new Command("list"));
+        if(list == null) return;
+        System.out.println(list);
+        
     }
 }

@@ -20,6 +20,12 @@ public class Command {
         this.path = null;
     }
     
+    public Command(String command, String name) {
+        this.command = command;
+        this.name = name;
+        this.path = null;
+    }
+    
     public Command(String command, String name, String path) {
         this.command = command;
         this.name = name;
