@@ -11,11 +11,12 @@ package hsqldb.manager;
  */
 public class DatabaseDescriptor {
     
-    
+    public String name;
     public String path;
     public int number;
 
-    public DatabaseDescriptor(String path, int number) {
+    public DatabaseDescriptor(String name, String path, int number) {
+        this.name = name;
         this.path = path;
         this.number = number;
     }
