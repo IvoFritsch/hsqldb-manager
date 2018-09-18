@@ -14,6 +14,12 @@ public class Command {
     private String name;
     private String path;
 
+    public Command(String command) {
+        this.command = command;
+        this.name = null;
+        this.path = null;
+    }
+    
     public Command(String command, String name, String path) {
         this.command = command;
         this.name = name;

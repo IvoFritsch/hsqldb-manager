@@ -6,18 +6,33 @@
 package hsqldb.manager;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import hsqldb.cli.CliUtility;
+import java.awt.AWTException;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.ServerConnector;
@@ -34,23 +49,35 @@ public class HsqldbManager extends AbstractHandler{
 
     private static Server hsqldbServer;
     private static Map<String,DatabaseDescriptor> deployedDbs = new HashMap<>();
-    private static int DBS_PORT = 7030;
-    private static int MANAGER_PORT = 1111;
+    public static final int DBS_PORT = 7030;
+    public static final int MANAGER_PORT = 1111;
+    private static volatile boolean accepting = false;
+    private static volatile HttpServletResponse currentResponse = null;
+    private static File deployed_dbs_File;
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        System.out.println("HSQL Databases Manager...");
+        sendResponse("HSQL Databases Manager...");
         org.eclipse.jetty.util.log.Log.setLog(new NoLogging());
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(MANAGER_PORT);
         // Inidica que somente aceita conexões vinda da máquina local (localhost)
         ((ServerConnector)server.getConnectors()[0]).setPort(1111);
         ((ServerConnector)server.getConnectors()[0]).setHost("localhost");
-        File deployed_dbs_File = new File("deployed_dbs.db");
-        if(!deployed_dbs_File.exists())
+        
+        String jarRoot = "";
+        try {
+            jarRoot = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+            if(!jarRoot.endsWith("/")) jarRoot += "/";
+        } catch (URISyntaxException ex) {
+        }
+        deployed_dbs_File = new File(jarRoot+"deployed_dbs.db");
+        if(!deployed_dbs_File.exists()){
             deployed_dbs_File.createNewFile();
-        else {
-            
+            FileUtils.write(deployed_dbs_File, "{}", "UTF-8");
+        } else {
+            Type type = new TypeToken<HashMap<String, DatabaseDescriptor>>(){}.getType();
+            deployedDbs = new Gson().fromJson(FileUtils.readFileToString(deployed_dbs_File, "UTF-8"), type);
         }
         
         
@@ -58,16 +85,22 @@ public class HsqldbManager extends AbstractHandler{
             startHsqlServer();
             server.setHandler(new HsqldbManager());
             server.start();
+            accepting = true;
             server.join();
         } catch (Exception e){
             e.printStackTrace();
+            System.err.println("The manager is already running.");
             System.exit(0);
         }
     }
 
     @Override
     public void handle(String string, Request rqst, HttpServletRequest hsr, HttpServletResponse response) throws IOException, ServletException {
-        System.out.println(hsr.getMethod());
+        currentResponse = response;
+        if(!accepting) {
+            rqst.setHandled(true);
+            return;
+        }
         if(hsr.getMethod().equals("POST")){
             
             
@@ -89,6 +122,11 @@ public class HsqldbManager extends AbstractHandler{
             case "deploy":
                 deployHsqlDatabase(c);
                 break;
+            case "stop":
+                accepting = false;
+                ScheduledExecutorService parador = Executors.newScheduledThreadPool(1);
+                parador.schedule(() -> System.exit(0), 1500, TimeUnit.MILLISECONDS);
+                break;
         }
         
         
@@ -108,7 +146,7 @@ public class HsqldbManager extends AbstractHandler{
         try {
             hsqldbServer.setProperties(p);
         } catch (Exception ex) {
-            System.err.println("Unable to set the HSQLDB properties, the server will not start.");
+            sendResponse("Unable to set the HSQLDB properties, the server will not start.");
             return;
         }
         hsqldbServer.setLogWriter(null); // can use custom writer
@@ -122,32 +160,34 @@ public class HsqldbManager extends AbstractHandler{
     
     private static void deployHsqlDatabase(Command c){
         if(deployedDbs.containsKey(c.getName())){
-            System.out.println("There's already an deployed database with the name '"+c.getName()+"'.");
+            sendResponse("There's already an deployed database with the name '"+c.getName()+"'.");
             return;
         }
         if(deployedDbs.size() == 10){
-            System.out.println("HSQLDB server supports the maximum of 10 deployed databases at the same time.");
+            sendResponse("HSQLDB server supports the maximum of 10 deployed databases at the same time.");
             return;
         }
-        System.out.println("Deploying database "+c.getName()+"...");
+        sendResponse("Deploying database "+c.getName()+"...");
         deployedDbs.put(c.getName(), new DatabaseDescriptor(c.getName(),c.getPath(), deployedDbs.size()));
         shutdownServer();
         startHsqlServer();
-        System.out.println("Database "+c.getName()+" succesfully deployed at port "+DBS_PORT+"...\n"
+        sendResponse("Database "+c.getName()+" succesfully deployed at port "+DBS_PORT+"...\n"
                 + "    Connect to it via the URL 'jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName()+"'");
-        System.out.println(new Gson().toJson(deployedDbs));
+        //sendResponse(new Gson().toJson(deployedDbs));
+        updateDeployedDbsFile();
     }
     
     private static void undeployHsqlDatabase(String name) throws Exception{
         if(!deployedDbs.containsKey(name)){
-            System.out.println("There's no deployed database with the name '"+name+"'.");
+            sendResponse("There's no deployed database with the name '"+name+"'.");
             return;
         }
-        System.out.println("Undeploying database "+name+"...");
+        sendResponse("Undeploying database "+name+"...");
         deployedDbs.remove(name);
         shutdownServer();
         startHsqlServer();
-        System.out.println("Database "+name+" was succesfully removed from de deployed databases...");
+        sendResponse("Database "+name+" was succesfully removed from de deployed databases...");
+        updateDeployedDbsFile();
     }
     
 
@@ -161,5 +201,20 @@ public class HsqldbManager extends AbstractHandler{
         } catch (Exception e) {
         }
         return saida.toString();
+    }
+    
+    public static void sendResponse(String text){
+        if(currentResponse == null) return;
+        try {
+            currentResponse.getWriter().println(text);
+        } catch (IOException ex) {
+        }
+    }
+    
+    private static void updateDeployedDbsFile(){
+        try {
+            FileUtils.writeStringToFile(deployed_dbs_File, new Gson().toJson(deployedDbs), "UTF-8", false);
+        } catch (IOException ex) {
+        }
     }
 }
