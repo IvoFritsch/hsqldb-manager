@@ -146,7 +146,11 @@ public class HsqldbManager extends AbstractHandler{
             case "stop":
                 accepting = false;
                 ScheduledExecutorService parador = Executors.newScheduledThreadPool(1);
-                parador.schedule(() -> System.exit(0), 1500, TimeUnit.MILLISECONDS);
+                hsqldbServer.shutdown();
+                parador.schedule(() -> {
+                    while(!hsqldbServer.isNotRunning());
+                    System.exit(0);
+                }, 1500, TimeUnit.MILLISECONDS);
                 break;
         }
         
