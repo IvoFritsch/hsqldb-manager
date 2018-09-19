@@ -1,0 +1,5 @@
+#!/bin/bash
+BASEDIR=$(dirname "$0")
+exec java -jar "$BASEDIR/hsqldb-manager.jar" $1 $2 $3
+
+

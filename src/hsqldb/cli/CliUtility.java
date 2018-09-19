@@ -134,12 +134,24 @@ public class CliUtility {
             return;
         }
         try {
-            new ProcessBuilder("java", "-cp", jarPath, "hsqldb.manager.HsqldbManager").start();
-            Thread.sleep(1000);
-            if(managerAvailabilityCheck())
-                System.out.println("Manager started succesfully.");
-            else
-                System.err.println("Manager couldn't start.");
+            System.out.println("Starting the HSQLDB Manager...");
+            Process manager = new ProcessBuilder("java", "-cp", jarPath, "hsqldb.manager.HsqldbManager").start();
+            int timeout = 0;
+            while(timeout < 15){
+                Thread.sleep(333);
+                if(managerAvailabilityCheck()){
+                    System.out.println("Manager started succesfully.");
+                    break;
+                }
+                timeout++;
+            }
+            if(timeout > 15){
+                if(manager.isAlive()){
+                    System.err.println("Manager doesn't start after 5 seconds, but it's still initializing.");
+                } else {
+                    System.err.println("Manager couldn't start, verify if the ports "+HsqldbManager.MANAGER_PORT+", "+HsqldbManager.DBS_PORT+" are free for the manager and the database.");
+                }
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }

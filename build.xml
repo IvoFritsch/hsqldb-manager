@@ -78,7 +78,7 @@
         <delete dir="${store.dir}"/>
         <mkdir dir="${store.dir}"/>
         <copy todir="${store.dir}/" >  
-                <fileset dir="" includes="hsqlman.sh"/>  
+                <fileset dir="" includes="hsqlman"/>  
                 <fileset dir="" includes="hsqlman.bat"/>  
                 <fileset dir="" includes="acl.txt"/>  
         </copy>

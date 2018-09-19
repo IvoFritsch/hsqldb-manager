@@ -40,6 +40,7 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.hsqldb.persist.HsqlProperties;
 import org.hsqldb.server.Server;
 import org.hsqldb.server.ServerAcl;
+import org.hsqldb.server.ServerConstants;
 
 /**
  *
@@ -83,13 +84,16 @@ public class HsqldbManager extends AbstractHandler{
         
         try{
             startHsqlServer();
+            if(hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
+                return;
+            }
             server.setHandler(new HsqldbManager());
             server.start();
             accepting = true;
             server.join();
         } catch (Exception e){
             e.printStackTrace();
-            System.err.println("The manager is already running.");
+            System.err.println("The manager is already running or the port "+MANAGER_PORT+" is occupied.");
             System.exit(0);
         }
     }
@@ -130,9 +134,9 @@ public class HsqldbManager extends AbstractHandler{
                     sendResponse("There's no deployed database.");
                     return;
                 }
-                sendResponse("Here's the list of names for currently deployed databases:");
+                sendResponse("Here's the list of names and paths for the currently deployed databases:");
                 deployedDbs.forEach((n,dd) -> {
-                    sendResponse("   - "+dd.name);
+                    sendResponse("   - "+dd.name+"   -   "+dd.path);
                 });
                 break;
             case "query_url":

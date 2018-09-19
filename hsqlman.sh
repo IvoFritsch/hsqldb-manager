@@ -1,1 +1,0 @@
-{ java -jar "%~dp0\hsqldb-manager.jar" %1 %2 %3 } 2> /dev/null
