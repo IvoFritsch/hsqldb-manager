@@ -93,6 +93,10 @@ public class CliUtility {
                     + "    deploy <db_name>");
             return;
         }
+        if(!managerAvailabilityCheck()){
+            System.err.println("The manager is not running, start it with the 'start' command");
+            return;
+        }
         
         File target = new File(args[FIRST_ARG]);
         target.mkdir();
@@ -145,11 +149,11 @@ public class CliUtility {
                 }
                 timeout++;
             }
-            if(timeout > 15){
+            if(timeout >= 15){
                 if(manager.isAlive()){
-                    System.err.println("Manager doesn't start after 5 seconds, but it's still initializing.");
+                    System.err.println("Manager doesn't start yet, but it's still initializing.");
                 } else {
-                    System.err.println("Manager couldn't start, verify if the ports "+HsqldbManager.MANAGER_PORT+", "+HsqldbManager.DBS_PORT+" are free for the manager and the database.");
+                    System.err.println("Manager couldn't start, verify if the ports "+HsqldbManager.MANAGER_PORT+" and "+HsqldbManager.DBS_PORT+" are free for the manager and the database.");
                 }
             }
         } catch (Exception ex) {

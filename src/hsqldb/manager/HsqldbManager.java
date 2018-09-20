@@ -84,7 +84,7 @@ public class HsqldbManager extends AbstractHandler{
         
         try{
             startHsqlServer();
-            if(hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
+            if(!deployedDbs.isEmpty() && hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
                 return;
             }
             server.setHandler(new HsqldbManager());
@@ -136,7 +136,7 @@ public class HsqldbManager extends AbstractHandler{
                 }
                 sendResponse("Here's the list of names and paths for the currently deployed databases:");
                 deployedDbs.forEach((n,dd) -> {
-                    sendResponse("   - "+dd.name+"   -   "+dd.path);
+                    sendResponse("   - "+dd.name+"   ->   "+dd.path);
                 });
                 break;
             case "query_url":

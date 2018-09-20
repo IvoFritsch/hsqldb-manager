@@ -94,7 +94,7 @@
             excludes="META-INF/*.SF, META-INF/*.DSA, META-INF/*.RSA"/>
         </zip>
         <delete file="${store.dir}/temp_final.jar"/>
-        <zip  basedir="${store.dir}"  destfile="hsqldb-manager-final-pack.zip">
+        <zip basedir="${store.dir}"  destfile="hsqldb-manager.zip">
             
         </zip>
         <delete dir="${store.dir}"/>
