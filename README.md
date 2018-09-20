@@ -3,7 +3,7 @@
 Easily manage your HSQL Databases, running all of them in one single server and port.
 
 ## Installation:
-1. Extract the [hsqldb-manager-final-pack.zip](https://github.com/IvoFritsch/hsqldb-manager/raw/master/hsqldb-manager.zip) in any location on your system.
+1. Extract the [hsqldb-manager.zip](https://github.com/IvoFritsch/hsqldb-manager/raw/master/hsqldb-manager.zip) in any location on your system.
 2. If you're in Linux, the `hsqlman` file must be converted into an executable using the command `chmod +x hsqlman`
 3. Add the location to your PATH variable (**If you dont want to do this, you must always call the `hsqlman.bat`/`hsqlman` via it's complete path.**)
 4. Everything's ready
