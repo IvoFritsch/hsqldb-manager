@@ -145,6 +145,7 @@ public class CliUtility {
                 Thread.sleep(333);
                 if(managerAvailabilityCheck()){
                     System.out.println("Manager started succesfully.");
+                    System.out.println(sendCommand(new Command("list")));
                     break;
                 }
                 timeout++;
@@ -227,8 +228,9 @@ public class CliUtility {
             return;
         }
         
-        String url = sendCommand(new Command("query_url", args[FIRST_ARG])).trim();
+        String url = sendCommand(new Command("query_url", args[FIRST_ARG]));
         if(url == null) return;
+        url = url.trim();
         if(url.equals("none")){
             System.err.println("There's no deployed database with the name '"+args[FIRST_ARG]+"'.");
             return;
