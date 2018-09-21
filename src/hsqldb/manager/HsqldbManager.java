@@ -195,6 +195,7 @@ public class HsqldbManager extends AbstractHandler{
         }
         sendResponse("Deploying database "+c.getName()+"...");
         deployedDbs.put(c.getName(), new DatabaseDescriptor(c.getName(),c.getPath(), deployedDbs.size()));
+        hsqldbServer.setNoSystemExit(true);
         shutdownServer();
         startHsqlServer();
         sendResponse("Database "+c.getName()+" succesfully deployed at port "+DBS_PORT+"...\n"
