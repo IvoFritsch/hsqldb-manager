@@ -59,7 +59,6 @@ public class HsqldbManager extends AbstractHandler{
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        sendResponse("HSQL Databases Manager...");
         org.eclipse.jetty.util.log.Log.setLog(new NoLogging());
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(MANAGER_PORT);
         // Inidica que somente aceita conexões vinda da máquina local (localhost)
@@ -149,12 +148,9 @@ public class HsqldbManager extends AbstractHandler{
                 break;
             case "stop":
                 accepting = false;
-                ScheduledExecutorService parador = Executors.newScheduledThreadPool(1);
-                hsqldbServer.shutdown();
-                parador.schedule(() -> {
-                    while(!hsqldbServer.isNotRunning());
-                    System.exit(0);
-                }, 1500, TimeUnit.MILLISECONDS);
+                shutdownServer();
+                while(!hsqldbServer.isNotRunning());
+                System.exit(0);
                 break;
         }
         
@@ -180,11 +176,12 @@ public class HsqldbManager extends AbstractHandler{
         }
         hsqldbServer.setLogWriter(null); // can use custom writer
         hsqldbServer.setErrWriter(null); // can use custom writer
+        hsqldbServer.setNoSystemExit(false);
         hsqldbServer.start();
     }
     
     private static void shutdownServer(){
-        hsqldbServer.shutdown();
+        hsqldbServer.shutdownWithCatalogs(org.hsqldb.Database.CLOSEMODE_NORMAL);
     }
     
     private static void deployHsqlDatabase(Command c){
@@ -202,7 +199,6 @@ public class HsqldbManager extends AbstractHandler{
         startHsqlServer();
         sendResponse("Database "+c.getName()+" succesfully deployed at port "+DBS_PORT+"...\n"
                 + "    Connect to it via the URL 'jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName()+"'");
-        //sendResponse(new Gson().toJson(deployedDbs));
         updateDeployedDbsFile();
     }
     
@@ -212,6 +208,7 @@ public class HsqldbManager extends AbstractHandler{
             return;
         }
         deployedDbs.remove(c.getName());
+        hsqldbServer.setNoSystemExit(true);
         shutdownServer();
         startHsqlServer();
         sendResponse("Database "+c.getName()+" was succesfully removed from de deployed databases...");

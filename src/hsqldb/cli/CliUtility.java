@@ -65,9 +65,9 @@ public class CliUtility {
                     return;
                 case "status":
                     if(managerAvailabilityCheck())
-                        System.out.println("The manager IS RUNNING");
+                        System.out.println("The manager IS RUNNING.");
                     else
-                        System.out.println("The manager IS NOT RUNNING");
+                        System.out.println("The manager IS NOT RUNNING.");
                     return;
                 case "sqltool":
                     openSqlTool(args);
@@ -201,9 +201,12 @@ public class CliUtility {
                 response.append("\n");
             }
             in.close();
-            return response.toString();
+            return response.toString().trim();
         } catch (IOException ex) {
-            System.err.println("Could not communicate with the HSQLDB Manager, it's probably not running, start it with the 'start' command");
+            if(c.getCommand().equals("stop"))
+                System.err.println("Manager stopped succesfully.");
+            else
+                System.err.println("Could not communicate with the HSQLDB Manager, it's probably not running, start it with the 'start' command.");
         }
         return null;
     }
