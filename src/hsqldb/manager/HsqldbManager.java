@@ -8,38 +8,22 @@ package hsqldb.manager;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import hsqldb.cli.CliUtility;
-import java.awt.AWTException;
-import java.awt.MenuItem;
-import java.awt.PopupMenu;
-import java.awt.SystemTray;
-import java.awt.Toolkit;
-import java.awt.TrayIcon;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.hsqldb.persist.HsqlProperties;
 import org.hsqldb.server.Server;
-import org.hsqldb.server.ServerAcl;
 import org.hsqldb.server.ServerConstants;
 
 /**
@@ -145,6 +129,17 @@ public class HsqldbManager extends AbstractHandler{
                     return;
                 }
                 sendResponse("jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName());
+                break;
+            case "query_location":
+                DatabaseDescriptor dd1 = deployedDbs.get(c.getName());
+                if(dd1 == null){
+                    sendResponse("none");
+                    return;
+                }
+                String pathToSend = c.getPath();
+                pathToSend = pathToSend.replace("\\", "/");
+                if(!pathToSend.endsWith("/")) pathToSend = pathToSend.concat("/");
+                sendResponse(pathToSend);
                 break;
             case "stop":
                 accepting = false;
