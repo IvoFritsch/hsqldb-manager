@@ -104,6 +104,7 @@ public class HsqldbManager extends AbstractHandler{
         }
     }
     
+    
     private static void executeCommand(Command c){
         switch(c.getCommand()){
             case "deploy":
@@ -136,7 +137,7 @@ public class HsqldbManager extends AbstractHandler{
                     sendResponse("none");
                     return;
                 }
-                String pathToSend = c.getPath();
+                String pathToSend = dd1.path;
                 pathToSend = pathToSend.replace("\\", "/");
                 if(!pathToSend.endsWith("/")) pathToSend = pathToSend.concat("/");
                 sendResponse(pathToSend);
