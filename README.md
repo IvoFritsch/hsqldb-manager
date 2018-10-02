@@ -22,3 +22,6 @@ All the usage is made by commands in terminal/cmd, calling the `hsqlman.bat` for
 | list | List all the currently deployed and running databases. |
 | sqltool <db_name> | Open the SQL access tool in the provided database. |
 
+## Access control:
+
+The acces control for the deployed databases is configured inside the supplied `acl.txt`. Open the file for more instructions.
