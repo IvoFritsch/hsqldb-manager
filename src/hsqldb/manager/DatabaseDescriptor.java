@@ -13,12 +13,10 @@ public class DatabaseDescriptor {
     
     public String name;
     public String path;
-    public int number;
 
-    public DatabaseDescriptor(String name, String path, int number) {
+    public DatabaseDescriptor(String name, String path) {
         this.name = name;
         this.path = path;
-        this.number = number;
     }
     
     

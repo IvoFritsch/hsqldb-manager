@@ -30,7 +30,7 @@ public class CliUtility {
     private final static int FIRST_ARG = 1;
     
     public static void main(String[] args){
-        //args = new String[]{"sqltool","lf-transportes"};
+        //args = new String[]{"deploy","lf-transportes"};
         if(args.length == 0){
             System.out.println("Send commands to the HSQL Databases Manager.\n"
                     + "    Usage:\n"
@@ -78,7 +78,7 @@ public class CliUtility {
                 + "    stop                -  Stop all the running HSQLDB instances.\n"
                 + "    status              -  Display if the manager is currently running.\n"
                 + "    deploy <db_name>    -  Deploy an database with the provided name, storing its files in the current\n"
-                + "                           CLI location.\n"
+                + "                           CLI working directory.\n"
                 + "    undeploy <db_name>  -  Undeploy the database with the provided name, keeping its files as it is.\n"
                 + "    list                -  List all the currently deployed and running databases.\n"
                 + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.");
@@ -96,6 +96,11 @@ public class CliUtility {
             return;
         }
         
+        String url = sendCommand(new Command("query_url", args[FIRST_ARG]));
+        if(!url.equals("none")){
+            System.err.println("There's already an deployed database with the name '"+args[FIRST_ARG]+"'.");
+            return;
+        }
         File target = new File(args[FIRST_ARG]);
         target.mkdir();
         if(!target.exists()) {

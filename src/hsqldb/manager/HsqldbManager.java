@@ -39,6 +39,7 @@ public class HsqldbManager extends AbstractHandler{
     private static volatile boolean accepting = false;
     private static volatile HttpServletResponse currentResponse = null;
     private static File deployed_dbs_File;
+    private static String jarRoot = "";
     /**
      * @param args the command line arguments
      */
@@ -49,7 +50,6 @@ public class HsqldbManager extends AbstractHandler{
         ((ServerConnector)server.getConnectors()[0]).setPort(1111);
         ((ServerConnector)server.getConnectors()[0]).setHost("localhost");
         
-        String jarRoot = "";
         try {
             jarRoot = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
             if(!jarRoot.endsWith("/")) jarRoot += "/";
@@ -118,9 +118,9 @@ public class HsqldbManager extends AbstractHandler{
                     sendResponse("There's no deployed database.");
                     return;
                 }
-                sendResponse("Here's the list of names and paths for the currently deployed databases:");
+                sendResponse("Here's the list of names, paths and URLs for the currently deployed databases:");
                 deployedDbs.forEach((n,dd) -> {
-                    sendResponse("   - "+dd.name+"   ->   "+dd.path);
+                    sendResponse("   - "+dd.name+" -> "+dd.path+ " : "+"jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+dd.name);
                 });
                 break;
             case "query_url":
@@ -159,10 +159,13 @@ public class HsqldbManager extends AbstractHandler{
         if(deployedDbs.isEmpty()) return;
         HsqlProperties p = new HsqlProperties();
         p.setProperty("server.port",DBS_PORT);
+        Contador i = new Contador();
         // set up the rest of properties
         deployedDbs.forEach((n,dd) -> {
-            p.setProperty("server.database."+dd.number,"file:"+dd.path+"/"+n);
-            p.setProperty("server.dbname."+dd.number,n);
+            p.setProperty("server.database."+i.i,"file:"+dd.path+"/"+n);
+            p.setProperty("server.dbname."+i.i,n);
+            p.setProperty("server.acl",jarRoot+"acl.txt");
+            i.i++;
         });
         try {
             hsqldbServer.setProperties(p);
@@ -190,7 +193,7 @@ public class HsqldbManager extends AbstractHandler{
             return;
         }
         sendResponse("Deploying database "+c.getName()+"...");
-        deployedDbs.put(c.getName(), new DatabaseDescriptor(c.getName(),c.getPath(), deployedDbs.size()));
+        deployedDbs.put(c.getName(), new DatabaseDescriptor(c.getName(),c.getPath()));
         hsqldbServer.setNoSystemExit(true);
         shutdownServer();
         startHsqlServer();
