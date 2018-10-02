@@ -24,5 +24,8 @@ All the usage is made by commands in terminal/cmd, calling the `hsqlman.bat` for
 
 ## Access control:
 
-The access control for the deployed databases is configured inside the supplied `hsqldb-manager.zip -> acl.txt`. Open the file for more instructions.
+The access control for the deployed databases is configured inside the supplied `hsqldb-manager.zip -> acl.txt`. 
+
+Open the file for more instructions.
+
 When you modify the acl.txt file, the rules are automatically reloaded.
