@@ -30,6 +30,7 @@ public class CliUtility {
     private final static int FIRST_ARG = 1;
     
     public static void main(String[] args){
+        //args = new String[]{"sqltool","lf-transportes"};
         if(args.length == 0){
             System.out.println("Send commands to the HSQL Databases Manager.\n"
                     + "    Usage:\n"
@@ -233,7 +234,7 @@ public class CliUtility {
             return;
         }
         System.setProperty("sqltool.REMOVE_EMPTY_VARS", "false");
-        SqlTool.main(new String[]{"--inlineRc=url="+url+",user=SA"});
+        SqlTool.main(new String[]{"--inlineRc=url="+url+",user=SA,transiso=TRANSACTION_READ_COMMITTED"});
     }
 
     private static void sendList() {
