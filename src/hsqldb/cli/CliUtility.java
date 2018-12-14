@@ -30,7 +30,7 @@ public class CliUtility {
     private final static int FIRST_ARG = 1;
     
     public static void main(String[] args){
-        //args = new String[]{"deploy","lf-transportes"};
+        System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2018");
         if(args.length == 0){
             System.out.println("Send commands to the HSQL Databases Manager.\n"
                     + "    Usage:\n"
