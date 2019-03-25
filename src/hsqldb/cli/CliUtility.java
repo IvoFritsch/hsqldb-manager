@@ -31,6 +31,7 @@ public class CliUtility {
     
     public static void main(String[] args){
         //args = new String[]{"backup", "flexypoints_server"};
+        System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2018");
         if(args.length == 0){
             printHelp();
             return;
