@@ -13,8 +13,15 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.hsqldb.cmdline.SqlTool;
 import org.hsqldb.persist.HsqlProperties;
 import org.hsqldb.server.Server;
 import org.hsqldb.server.ServerConstants;
@@ -46,7 +54,7 @@ public class HsqldbManager extends AbstractHandler{
     public static void main(String[] args) throws Exception {
         org.eclipse.jetty.util.log.Log.setLog(new NoLogging());
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(MANAGER_PORT);
-        // Inidica que somente aceita conexões vinda da máquina local (localhost)
+        // Inidica que somente aceita conexões vindas da máquina local (localhost)
         ((ServerConnector)server.getConnectors()[0]).setPort(1111);
         ((ServerConnector)server.getConnectors()[0]).setHost("localhost");
         
@@ -54,6 +62,7 @@ public class HsqldbManager extends AbstractHandler{
             jarRoot = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
             if(!jarRoot.endsWith("/")) jarRoot += "/";
         } catch (URISyntaxException ex) {
+            ex.printStackTrace();
         }
         deployed_dbs_File = new File(jarRoot+"deployed_dbs.db");
         if(!deployed_dbs_File.exists()){
@@ -148,6 +157,32 @@ public class HsqldbManager extends AbstractHandler{
                 while(!hsqldbServer.isNotRunning());
                 System.exit(0);
                 break;
+            case "backup":
+                try {
+                    DatabaseDescriptor dd2 = deployedDbs.get(c.getName());
+                    if(dd2 == null){
+                        sendResponse("none");
+                        return;
+                    }
+                    String dbPath = dd2.path;
+                    
+                    SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd hh_mm_ss"); 
+                    String arqname = c.getName() + " " + dt.format(new Date());
+                    File managedFiles = new File(dbPath+"/managedFiles");
+                    if(managedFiles.isDirectory()){
+                        FileUtils.copyDirectory(managedFiles, new File(jarRoot+"temp_bkp/managedFiles"));
+                    }
+                    SqlTool.objectMain(new String[]{"--inlineRc=url=jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName()+",user=SA,password=,transiso=TRANSACTION_READ_COMMITTED", "--sql="
+                            + "BACKUP DATABASE TO '"+jarRoot+"temp_bkp/"+c.getName()+".tgz' NOT BLOCKING;"
+                            + ""});
+                    
+                    pack(jarRoot+"temp_bkp", c.getPath()+"/"+arqname+".zip");
+                    FileUtils.deleteDirectory(new File(jarRoot+"temp_bkp"));
+                    sendResponse("Backup created in -> "+c.getPath()+"/"+arqname+".zip");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
         }
         
         
@@ -170,6 +205,7 @@ public class HsqldbManager extends AbstractHandler{
         try {
             hsqldbServer.setProperties(p);
         } catch (Exception ex) {
+            ex.printStackTrace();
             sendResponse("Unable to set the HSQLDB properties, the server will not start.");
             return;
         }
@@ -242,4 +278,24 @@ public class HsqldbManager extends AbstractHandler{
         } catch (IOException ex) {
         }
     }
+    
+    public static void pack(String sourceDirPath, String zipFilePath) throws IOException {
+        Path p = Files.createFile(Paths.get(zipFilePath));
+        try (ZipOutputStream zs = new ZipOutputStream(Files.newOutputStream(p))) {
+            Path pp = Paths.get(sourceDirPath);
+            Files.walk(pp)
+              .filter(path -> !Files.isDirectory(path))
+              .forEach(path -> {
+                  ZipEntry zipEntry = new ZipEntry(pp.relativize(path).toString());
+                  try {
+                      zs.putNextEntry(zipEntry);
+                      Files.copy(path, zs);
+                      zs.closeEntry();
+                } catch (IOException e) {
+                    System.err.println(e);
+                }
+              });
+        }
+    }
+    
 }

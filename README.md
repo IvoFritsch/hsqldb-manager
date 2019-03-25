@@ -17,10 +17,11 @@ All the usage is made by commands in terminal/cmd, calling the `hsqlman.bat` for
 | start | Start the HSQLDB Manager, running all the deployed databases. |
 | stop | Stop all the running HSQLDB instances. |
 | status | Display if the manager is currently running. |
-| deploy <db_name> | Deploy an database with the provided name, storing its files in the current cmd/terminal location. |
+| deploy <db_name> | Deploy an database with the provided name, creating it if doesn't exist, and storing its files in the current cmd/terminal location. |
 | undeploy <db_name> | Undeploy the database with the provided name, keeping its files as it is. |
 | list | List all the currently deployed and running databases. |
 | sqltool <db_name> | Open the SQL access tool in the provided database. |
+| backup <db_name> | Makes an hot backup of the database to the current CLI location. |
 
 ## Access control:
 

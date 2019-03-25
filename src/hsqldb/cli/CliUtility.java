@@ -30,18 +30,9 @@ public class CliUtility {
     private final static int FIRST_ARG = 1;
     
     public static void main(String[] args){
-        //args = new String[]{"deploy","lf-transportes"};
+        //args = new String[]{"backup", "flexypoints_server"};
         if(args.length == 0){
-            System.out.println("Send commands to the HSQL Databases Manager.\n"
-                    + "    Usage:\n"
-                    + "    start               -  Start the HSQLDB Manager, running all the deployed databases.\n"
-                    + "    stop                -  Stop all the running HSQLDB instances.\n"
-                    + "    status              -  Display if the manager is currently running.\n"
-                    + "    deploy <db_name>    -  Deploy an database with the provided name, storing its files in the current\n"
-                    + "                           CLI location.\n"
-                    + "    undeploy <db_name>  -  Undeploy the database with the provided name, keeping its files as it is.\n"
-                    + "    list                -  List all the currently deployed and running databases.\n"
-                    + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.");
+            printHelp();
             return;
         }
         if(args.length > 0){
@@ -70,29 +61,44 @@ public class CliUtility {
                 case "sqltool":
                     openSqlTool(args);
                     return;
+                case "backup":
+                    sendBackup(args);
+                    return;
             }
         }
+        printHelp();
+    }
+
+    private static void printHelp(){
         System.out.println("Send commands to the HSQL Databases Manager.\n"
                 + "    Usage:\n"
                 + "    start               -  Start the HSQLDB Manager, running all the deployed databases.\n"
                 + "    stop                -  Stop all the running HSQLDB instances.\n"
                 + "    status              -  Display if the manager is currently running.\n"
-                + "    deploy <db_name>    -  Deploy an database with the provided name, storing its files in the current\n"
-                + "                           CLI working directory.\n"
+                + "    deploy <db_name>    -  Deploy an database with the provided name, creating it if doesn't exist, and storing its files in the current\n"
+                + "                           CLI locations.\n"
                 + "    undeploy <db_name>  -  Undeploy the database with the provided name, keeping its files as it is.\n"
                 + "    list                -  List all the currently deployed and running databases.\n"
-                + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.");
+                + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.\n"
+                + "    backup <db_name>    -  Makes an hot backup of the database to the current CLI location.");
     }
-
+    
     private static void sendDeploy(String[] args) {
         if(args.length < 2){
-            System.out.println("Deploy an database with the provided name, storing its files in the current CLI location.\n"
+            System.out.println("Deploy an database with the provided name, creating it if doesn't exist, and storing its files in the current CLI location.\n"
                     + "    Usage:\n"
                     + "    deploy <db_name>");
             return;
         }
         if(!managerAvailabilityCheck()){
             System.err.println("The manager is not running, start it with the 'start' command");
+            return;
+        }
+        if(args[FIRST_ARG].contains("/") || args[FIRST_ARG].contains("\\") || args[FIRST_ARG].contains(":") || 
+           args[FIRST_ARG].contains("*") || args[FIRST_ARG].contains("?") || args[FIRST_ARG].contains("\"") || 
+           args[FIRST_ARG].contains("<") || args[FIRST_ARG].contains(">") || args[FIRST_ARG].contains("|")){
+            System.err.println("Invalid database name, the name can't contain any of these characters:\n"
+                    + "     / \\ : * ? \" < > |");
             return;
         }
         
@@ -127,6 +133,26 @@ public class CliUtility {
         sendCommand(new Command("stop"));
     }
 
+    private static void sendBackup(String[] args) {
+        if(args.length < 2){
+            System.out.println("Makes an hot backup of the database to the current CLI location.\n"
+                    + "    Usage:\n"
+                    + "    backup <db_name>");
+            return;
+        }
+        
+        String url = sendCommand(new Command("query_url", args[FIRST_ARG]));
+        if(url == null) return;
+        url = url.trim();
+        if(url.equals("none")){
+            System.err.println("There's no deployed database with the name '"+args[FIRST_ARG]+"'.");
+            return;
+        }
+        String resp = sendCommand(new Command("backup", args[FIRST_ARG], new File("").getAbsolutePath()));
+        if(resp == null) return;
+        System.out.println(resp);
+    }
+    
     private static void startManager(){
         if(managerAvailabilityCheck()){
             System.err.println("The manager is already running.");
