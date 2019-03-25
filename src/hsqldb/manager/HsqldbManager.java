@@ -166,7 +166,7 @@ public class HsqldbManager extends AbstractHandler{
                     }
                     String dbPath = dd2.path;
                     
-                    SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd hh_mm_ss"); 
+                    SimpleDateFormat dt = new SimpleDateFormat("yyyy-MM-dd HH_mm_ss"); 
                     String arqname = c.getName() + " " + dt.format(new Date());
                     File managedFiles = new File(dbPath+"/managedFiles");
                     if(managedFiles.isDirectory()){

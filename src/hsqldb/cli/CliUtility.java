@@ -18,6 +18,7 @@ import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Scanner;
 import org.hsqldb.cmdline.SqlTool;
 
 /**
@@ -99,7 +100,7 @@ public class CliUtility {
            args[FIRST_ARG].contains("*") || args[FIRST_ARG].contains("?") || args[FIRST_ARG].contains("\"") || 
            args[FIRST_ARG].contains("<") || args[FIRST_ARG].contains(">") || args[FIRST_ARG].contains("|")){
             System.err.println("Invalid database name, the name can't contain any of these characters:\n"
-                    + "     / \\ : * ? \" < > |");
+                    + "    / \\ : * ? \" < > |");
             return;
         }
         
@@ -149,6 +150,7 @@ public class CliUtility {
             System.err.println("There's no deployed database with the name '"+args[FIRST_ARG]+"'.");
             return;
         }
+        System.err.println("Backing up the database, this can take some time...");
         String resp = sendCommand(new Command("backup", args[FIRST_ARG], new File("").getAbsolutePath()));
         if(resp == null) return;
         System.out.println(resp);
@@ -265,14 +267,22 @@ public class CliUtility {
             System.err.println("There's no deployed database with the name '"+args[FIRST_ARG]+"'.");
             return;
         }
+        Scanner in = new Scanner(System.in);
+        System.out.print("Do you want to use auto-commit for this session? (Y/_): ");
+        String autocommit_string = in.nextLine();
+        boolean autocommit = false;
+        if(autocommit_string.trim().isEmpty())
+            autocommit_string = "N";
+        if(autocommit_string.toUpperCase().equals("Y")){
+            autocommit = true;
+        }
         System.setProperty("sqltool.REMOVE_EMPTY_VARS", "false");
-        SqlTool.main(new String[]{"--inlineRc=url="+url+",user=SA,transiso=TRANSACTION_READ_COMMITTED"});
+        SqlTool.main(new String[]{"--inlineRc=url="+url+",user=SA,password=,transiso=TRANSACTION_READ_COMMITTED", autocommit ? "--autoCommit" : "--continueOnErr=true"});
     }
 
     private static void sendList() {
         String list = sendCommand(new Command("list"));
         if(list == null) return;
         System.out.println(list);
-        
     }
 }
