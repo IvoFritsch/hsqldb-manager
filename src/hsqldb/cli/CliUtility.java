@@ -18,8 +18,12 @@ import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.hsqldb.cmdline.SqlTool;
+import org.hsqldb.util.DatabaseManagerSwing;
 
 /**
  *
@@ -31,7 +35,7 @@ public class CliUtility {
     private final static int FIRST_ARG = 1;
     
     public static void main(String[] args){
-        //args = new String[]{"backup", "flexypoints_server"};
+//        args = new String[]{"swing"};
         System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2018");
         if(args.length == 0){
             printHelp();
@@ -66,6 +70,9 @@ public class CliUtility {
                 case "backup":
                     sendBackup(args);
                     return;
+                case "swing":
+                    openHsqldbSwing(args);
+                    return;
             }
         }
         printHelp();
@@ -82,7 +89,8 @@ public class CliUtility {
                 + "    undeploy <db_name>  -  Undeploy the database with the provided name, keeping its files as it is.\n"
                 + "    list                -  List all the currently deployed and running databases.\n"
                 + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.\n"
-                + "    backup <db_name>    -  Makes an hot backup of the database to the current CLI location.");
+                + "    backup <db_name>    -  Makes an hot backup of the database to the current CLI location.\n"
+                + "    swing [<db_name>]   -  Open HSQLDB swing.");
     }
     
     private static void sendDeploy(String[] args) {
@@ -285,4 +293,57 @@ public class CliUtility {
         if(list == null) return;
         System.out.println(list);
     }
+    
+    private static void openHsqldbSwing(String[] args){
+        
+        
+        String jarPath = null;
+        try {
+            jarPath = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
+        } catch (URISyntaxException ex) {
+            System.err.println("Couldn't start the HSQLDB Manager, unable to find the .jar file.");
+            return;
+        }
+        
+        ProcessBuilder processo;
+        String[] argumentos = {};
+        System.out.println("Starting HSQLDB swing utility.");
+        if (args.length < 2){
+            argumentos = new String[] {"java",
+                                       "-cp", 
+                                       jarPath,
+                                       "org.hsqldb.util.DatabaseManagerSwing"};
+            
+        } else {
+            
+            String url = sendCommand(new Command("query_url", args[FIRST_ARG]));
+            if(url == null) return;
+            url = url.trim();
+            if(url.equals("none")){
+                System.err.println("There's no database with the name '"+args[FIRST_ARG]+"'.");
+                return;
+            }
+            
+            
+            argumentos = new String[] {"java",
+                                       "-cp", 
+                                       jarPath,
+                                       "org.hsqldb.util.DatabaseManagerSwing",
+                                       "--driver",
+                                       "org.hsqldb.jdbcDriver",
+                                       "--url",
+                                       "jdbc:hsqldb:hsql://localhost:7030/" + args[FIRST_ARG],
+                                       "--user",
+                                       "SA"};
+        }
+        
+        
+        
+        processo = new ProcessBuilder(argumentos);
+        try {
+            processo.start();
+        } catch (IOException ex) {
+            System.out.println("Couldn't start the HSQLDB swing utility.");
+        }
+    } 
 }
