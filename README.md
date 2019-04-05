@@ -24,6 +24,7 @@ All the usage is made by commands in terminal/cmd, calling the `hsqlman.bat` for
 | list | List all the currently deployed and running databases. |
 | sqltool <db_name> | Open the SQL access tool in the provided database. |
 | backup <db_name> | Makes an hot backup of the database to the current CLI location. |
+| backup [<db_name>] | Open HSQLDB swing. |
 
 ## Access control:
 
