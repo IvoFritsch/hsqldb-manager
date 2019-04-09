@@ -141,7 +141,7 @@ public class CliUtility {
 
     private static void sendBackup(String[] args) {
         if(args.length < 2){
-            System.out.println("Makes an hot backup of the database to the current CLI location.\n"
+            System.out.println("Makes an hot backup of the database to the current CLI location or provided file/directory(optional).\n"
                     + "    Usage:\n"
                     + "    backup <db_name> [<file>]");
             return;
