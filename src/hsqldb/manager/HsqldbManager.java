@@ -175,10 +175,17 @@ public class HsqldbManager extends AbstractHandler{
                     SqlTool.objectMain(new String[]{"--inlineRc=url=jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName()+",user=SA,password=,transiso=TRANSACTION_READ_COMMITTED", "--sql="
                             + "BACKUP DATABASE TO '"+jarRoot+"temp_bkp/"+c.getName()+".tgz' NOT BLOCKING;"
                             + ""});
+                    String finalPath;
+                    if(new File(c.getPath()).isDirectory()){
+                        finalPath = c.getPath()+ "/"+arqname+".zip";
+                    }else{
+                        finalPath = c.getPath();
+                    }
                     
-                    pack(jarRoot+"temp_bkp", c.getPath()+"/"+arqname+".zip");
+                    
+                    pack(jarRoot+"temp_bkp", finalPath);
                     FileUtils.deleteDirectory(new File(jarRoot+"temp_bkp"));
-                    sendResponse("Backup created in -> "+c.getPath()+"/"+arqname+".zip");
+                    sendResponse("Backup created in -> "+finalPath.replace("\\", "/"));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

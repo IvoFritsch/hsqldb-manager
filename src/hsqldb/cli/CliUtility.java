@@ -18,12 +18,8 @@ import java.net.ProtocolException;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.List;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.hsqldb.cmdline.SqlTool;
-import org.hsqldb.util.DatabaseManagerSwing;
 
 /**
  *
@@ -33,9 +29,10 @@ public class CliUtility {
     
     private final static int COMMAND = 0;
     private final static int FIRST_ARG = 1;
+    private final static int SECOND_ARG = 2;
     
     public static void main(String[] args){
-//        args = new String[]{"swing"};
+        //args = new String[]{"backup", "bestbit-server", "test.zip"};
         System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2018");
         if(args.length == 0){
             printHelp();
@@ -81,16 +78,15 @@ public class CliUtility {
     private static void printHelp(){
         System.out.println("Send commands to the HSQL Databases Manager.\n"
                 + "    Usage:\n"
-                + "    start               -  Start the HSQLDB Manager, running all the deployed databases.\n"
-                + "    stop                -  Stop all the running HSQLDB instances.\n"
-                + "    status              -  Display if the manager is currently running.\n"
-                + "    deploy <db_name>    -  Deploy an database with the provided name, creating it if doesn't exist, and storing its files in the current\n"
-                + "                           CLI locations.\n"
-                + "    undeploy <db_name>  -  Undeploy the database with the provided name, keeping its files as it is.\n"
-                + "    list                -  List all the currently deployed and running databases.\n"
-                + "    sqltool <db_name>   -  Open the SQL access tool in the provided database.\n"
-                + "    backup <db_name>    -  Makes an hot backup of the database to the current CLI location.\n"
-                + "    swing [<db_name>]   -  Open HSQLDB swing.");
+                + "    start                     -  Start the HSQLDB Manager, running all the deployed databases.\n"
+                + "    stop                      -  Stop all the running HSQLDB instances.\n"
+                + "    status                    -  Display if the manager is currently running.\n"
+                + "    deploy <db_name>          -  Deploy an database with the provided name, creating it if doesn't exist, and storing its files in the current CLI location.\n"
+                + "    undeploy <db_name>        -  Undeploy the database with the provided name, keeping its files as it is.\n"
+                + "    list                      -  List all the currently deployed and running databases.\n"
+                + "    sqltool <db_name>         -  Open the SQL access tool in the provided database.\n"
+                + "    swing [<db_name>]         -  Open HSQLDB swing access tool in the provided database(optional).\n"
+                + "    backup <db_name> [<file>] -  Makes an hot backup of the database to the current CLI location or provided file/directory(optional).");
     }
     
     private static void sendDeploy(String[] args) {
@@ -147,7 +143,7 @@ public class CliUtility {
         if(args.length < 2){
             System.out.println("Makes an hot backup of the database to the current CLI location.\n"
                     + "    Usage:\n"
-                    + "    backup <db_name>");
+                    + "    backup <db_name> [<file>]");
             return;
         }
         
@@ -158,8 +154,31 @@ public class CliUtility {
             System.err.println("There's no deployed database with the name '"+args[FIRST_ARG]+"'.");
             return;
         }
-        System.err.println("Backing up the database, this can take some time...");
-        String resp = sendCommand(new Command("backup", args[FIRST_ARG], new File("").getAbsolutePath()));
+        File bkpFile = null;
+        if(args.length > 2){
+            bkpFile = new File(args[SECOND_ARG]);
+            
+            if(!bkpFile.isDirectory() && !args[SECOND_ARG].endsWith(".zip")){
+               args[SECOND_ARG] = args[SECOND_ARG] + ".zip";
+               bkpFile = new File(args[SECOND_ARG]);
+            }
+            if(bkpFile.exists() && bkpFile.isFile()){
+                Scanner in = new Scanner(System.in);
+                System.out.print("The file '"+bkpFile.getAbsolutePath()+"' already exists, overwrite? (Y/_): ");
+                String overwrite = in.nextLine();
+                if(overwrite.trim().isEmpty())
+                    overwrite = "N";
+                if(!overwrite.toUpperCase().equals("Y")){
+                    System.err.println("Backup aborted.");
+                    return;
+                }
+                bkpFile.delete();
+            }
+        }
+        
+        bkpFile = bkpFile == null ? new File("") : bkpFile;
+        System.out.println("Backing up the database, this can take some time...");
+        String resp = sendCommand(new Command("backup", args[FIRST_ARG], bkpFile.getAbsolutePath()));
         if(resp == null) return;
         System.out.println(resp);
     }
@@ -295,19 +314,17 @@ public class CliUtility {
     }
     
     private static void openHsqldbSwing(String[] args){
-        
-        
         String jarPath = null;
         try {
             jarPath = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
         } catch (URISyntaxException ex) {
-            System.err.println("Couldn't start the HSQLDB Manager, unable to find the .jar file.");
+            System.err.println("Couldn't start the HSQLDB Swing, unable to find the .jar file.");
             return;
         }
         
         ProcessBuilder processo;
-        String[] argumentos = {};
-        System.out.println("Starting HSQLDB swing utility.");
+        String[] argumentos;
+        System.out.println("Starting HSQLDB swing utility...");
         if (args.length < 2){
             argumentos = new String[] {"java",
                                        "-cp", 
@@ -315,7 +332,6 @@ public class CliUtility {
                                        "org.hsqldb.util.DatabaseManagerSwing"};
             
         } else {
-            
             String url = sendCommand(new Command("query_url", args[FIRST_ARG]));
             if(url == null) return;
             url = url.trim();
@@ -323,8 +339,6 @@ public class CliUtility {
                 System.err.println("There's no database with the name '"+args[FIRST_ARG]+"'.");
                 return;
             }
-            
-            
             argumentos = new String[] {"java",
                                        "-cp", 
                                        jarPath,
@@ -336,9 +350,6 @@ public class CliUtility {
                                        "--user",
                                        "SA"};
         }
-        
-        
-        
         processo = new ProcessBuilder(argumentos);
         try {
             processo.start();

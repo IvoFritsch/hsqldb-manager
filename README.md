@@ -23,8 +23,8 @@ All the usage is made by commands in terminal/cmd, calling the `hsqlman.bat` for
 | undeploy <db_name> | Undeploy the database with the provided name, keeping its files as it is. |
 | list | List all the currently deployed and running databases. |
 | sqltool <db_name> | Open the SQL access tool in the provided database. |
-| backup <db_name> | Makes an hot backup of the database to the current CLI location. |
-| backup [<db_name>] | Open HSQLDB swing. |
+| swing [<db_name>] | Open HSQLDB swing access tool in the provided database(optional). |
+| backup <db_name> [<file>] | Makes an hot backup of the database to the current CLI location or provided file/directory(optional). |
 
 ## Access control:
 
