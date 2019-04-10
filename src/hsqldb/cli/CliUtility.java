@@ -8,6 +8,7 @@ package hsqldb.cli;
 import com.google.gson.Gson;
 import hsqldb.manager.Command;
 import hsqldb.manager.HsqldbManager;
+import java.awt.GraphicsEnvironment;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -33,6 +34,7 @@ public class CliUtility {
     
     public static void main(String[] args){
         //args = new String[]{"backup", "bestbit-server", "test.zip"};
+        //args = new String[]{"swing"};
         System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2018");
         if(args.length == 0){
             printHelp();
@@ -116,7 +118,7 @@ public class CliUtility {
         File target = new File(args[FIRST_ARG]);
         target.mkdir();
         if(!target.exists()) {
-            System.out.println("Coudn't create the directory to the database files, check if the name is valid.");
+            System.err.println("Coudn't create the directory to the database files, check if the name is valid.");
         }
         String resp = sendCommand(new Command("deploy", args[FIRST_ARG], target.getAbsolutePath()));
         if(resp == null) return;
@@ -264,7 +266,7 @@ public class CliUtility {
             return response.toString().trim();
         } catch (IOException ex) {
             if(c.getCommand().equals("stop"))
-                System.err.println("Manager stopped succesfully.");
+                System.out.println("Manager stopped succesfully.");
             else
                 System.err.println("Could not communicate with the HSQLDB Manager, it's probably not running, start it with the 'start' command.");
         }
@@ -322,10 +324,16 @@ public class CliUtility {
             return;
         }
         
+        if(GraphicsEnvironment.isHeadless()){
+            System.err.println("This environment doesn't support the java swing.\n"
+                    + "    Use the 'sqltool <db_name>' command to access the database via command line.");
+            return;
+        }
+        
         ProcessBuilder processo;
         String[] argumentos;
-        System.out.println("Starting HSQLDB swing utility...");
         if (args.length < 2){
+            System.out.println("Starting HSQLDB swing utility...");
             argumentos = new String[] {"java",
                                        "-cp", 
                                        jarPath,
@@ -339,6 +347,7 @@ public class CliUtility {
                 System.err.println("There's no database with the name '"+args[FIRST_ARG]+"'.");
                 return;
             }
+            System.out.println("Starting HSQLDB swing utility connected to the '"+args[FIRST_ARG]+"' database...");
             argumentos = new String[] {"java",
                                        "-cp", 
                                        jarPath,
@@ -354,7 +363,7 @@ public class CliUtility {
         try {
             processo.start();
         } catch (IOException ex) {
-            System.out.println("Couldn't start the HSQLDB swing utility.");
+            System.err.println("Couldn't start the HSQLDB swing utility.");
         }
     } 
 }
