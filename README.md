@@ -1,14 +1,16 @@
-# HSQL Databases Manager
-
-Easily manage your HSQL Databases, running all of them in one single server and port.
+# HSQLDB Manager
+An standalone all-in-one jar Database + Manager utility to easily manage your HSQLDB Databases, running all of them in one single server and port.
 
 Haftware SI - 2018
 
 ## Installation:
+The HSQLDB Manager is an all-in-one jar database, you dont need to have nothing more(unless Java) installed in your machine, the installation is as easy as you may want:
+
 1. Extract the [hsqldb-manager.zip](https://github.com/IvoFritsch/hsqldb-manager/raw/master/hsqldb-manager.zip) in any location on your system.
 2. If you're in Linux, the `hsqlman` file must be converted into an executable using the command `chmod +x hsqlman`
 3. Add the location to your PATH variable (**If you dont want to do this, you must always call the `hsqlman.bat`/`hsqlman` via it's complete path.**)
 4. Everything's ready
+5. You may now execute all the commands bellow
 
 ## Usage:
 

@@ -55,7 +55,7 @@ public class HsqldbManager extends AbstractHandler{
         org.eclipse.jetty.util.log.Log.setLog(new NoLogging());
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(MANAGER_PORT);
         // Inidica que somente aceita conexões vindas da máquina local (localhost)
-        ((ServerConnector)server.getConnectors()[0]).setPort(1111);
+        ((ServerConnector)server.getConnectors()[0]).setPort(MANAGER_PORT);
         ((ServerConnector)server.getConnectors()[0]).setHost("localhost");
         
         try {
