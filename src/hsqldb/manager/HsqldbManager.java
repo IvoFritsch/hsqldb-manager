@@ -73,6 +73,7 @@ public class HsqldbManager extends AbstractHandler{
             deployedDbs = new Gson().fromJson(FileUtils.readFileToString(deployed_dbs_File, "UTF-8"), type);
         }
         
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> executeCommand(new Command("stop"))));
         
         try{
             startHsqlServer();
@@ -115,6 +116,9 @@ public class HsqldbManager extends AbstractHandler{
     
     
     private static void executeCommand(Command c){
+        if(!accepting) {
+            return;
+        }
         switch(c.getCommand()){
             case "deploy":
                 deployHsqlDatabase(c);
