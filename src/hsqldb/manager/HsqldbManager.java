@@ -8,10 +8,19 @@ package hsqldb.manager;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import hsqldb.cli.CliUtility;
+import java.awt.AWTException;
+import java.awt.Desktop;
+import java.awt.Menu;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.Toolkit;
+import java.awt.TrayIcon;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +29,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletException;
@@ -47,17 +58,19 @@ public class HsqldbManager extends AbstractHandler{
     private static volatile boolean accepting = false;
     private static volatile HttpServletResponse currentResponse = null;
     private static File deployed_dbs_File;
+    private static File log_output_File;
     private static String jarRoot = "";
+    private static final String NEW_LINE = System.getProperty("line.separator");
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
+        
         org.eclipse.jetty.util.log.Log.setLog(new NoLogging());
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(MANAGER_PORT);
         // Inidica que somente aceita conexões vindas da máquina local (localhost)
         ((ServerConnector)server.getConnectors()[0]).setPort(MANAGER_PORT);
         ((ServerConnector)server.getConnectors()[0]).setHost("localhost");
-        
         try {
             jarRoot = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
             if(!jarRoot.endsWith("/")) jarRoot += "/";
@@ -72,9 +85,10 @@ public class HsqldbManager extends AbstractHandler{
             Type type = new TypeToken<HashMap<String, DatabaseDescriptor>>(){}.getType();
             deployedDbs = new Gson().fromJson(FileUtils.readFileToString(deployed_dbs_File, "UTF-8"), type);
         }
-        
+        log_output_File = new File(jarRoot+"logs.txt");
+        logInfo("HSQLDB Manager started.");
         Runtime.getRuntime().addShutdownHook(new Thread(() -> executeCommand(new Command("stop"))));
-        
+        createTrayIcon();
         try{
             startHsqlServer();
             if(!deployedDbs.isEmpty() && hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
@@ -85,7 +99,7 @@ public class HsqldbManager extends AbstractHandler{
             accepting = true;
             server.join();
         } catch (Exception e){
-            e.printStackTrace();
+            logException(e);
             System.err.println("The manager is already running or the port "+MANAGER_PORT+" is occupied.");
             System.exit(0);
         }
@@ -159,10 +173,12 @@ public class HsqldbManager extends AbstractHandler{
                 accepting = false;
                 shutdownServer();
                 while(!hsqldbServer.isNotRunning());
+                logInfo("HSQLDB Manager stopped.");
                 System.exit(0);
                 break;
             case "backup":
                 try {
+                    logInfo("Backing up database "+c.getName()+"...");
                     DatabaseDescriptor dd2 = deployedDbs.get(c.getName());
                     if(dd2 == null){
                         sendResponse("none");
@@ -190,8 +206,10 @@ public class HsqldbManager extends AbstractHandler{
                     pack(jarRoot+"temp_bkp", finalPath);
                     FileUtils.deleteDirectory(new File(jarRoot+"temp_bkp"));
                     sendResponse("Backup created in -> "+finalPath.replace("\\", "/"));
+                    logInfo("Backed up database "+c.getName()+" in -> "+finalPath.replace("\\", "/"));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    sendResponse("Exception during backup of the database, run the 'log' command to see the Exception.");
+                    logException(e);
                 }
                 break;
         }
@@ -216,8 +234,8 @@ public class HsqldbManager extends AbstractHandler{
         try {
             hsqldbServer.setProperties(p);
         } catch (Exception ex) {
-            ex.printStackTrace();
-            sendResponse("Unable to set the HSQLDB properties, the server will not start.");
+            sendResponse("Unable to set the HSQLDB properties, the server will not start, run the 'log' command to see the Exception.");
+            logException(ex);
             return;
         }
         hsqldbServer.setLogWriter(null); // can use custom writer
@@ -246,7 +264,9 @@ public class HsqldbManager extends AbstractHandler{
         startHsqlServer();
         sendResponse("Database "+c.getName()+" succesfully deployed at port "+DBS_PORT+"...\n"
                 + "    Connect to it via the URL 'jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName()+"'");
+        logInfo("Deployed database "+c.getName()+".");
         updateDeployedDbsFile();
+        updateTrayMenus();
     }
     
     private static void undeployHsqlDatabase(Command c){
@@ -259,7 +279,9 @@ public class HsqldbManager extends AbstractHandler{
         shutdownServer();
         startHsqlServer();
         sendResponse("Database "+c.getName()+" was succesfully removed from de deployed databases...");
+        logInfo("Undeployed database "+c.getName()+".");
         updateDeployedDbsFile();
+        updateTrayMenus();
     }
     
 
@@ -303,10 +325,93 @@ public class HsqldbManager extends AbstractHandler{
                       Files.copy(path, zs);
                       zs.closeEntry();
                 } catch (IOException e) {
-                    System.err.println(e);
+                    throw new RuntimeException(e);
                 }
               });
+        } catch (Exception e){
+            logException(e);
         }
     }
     
+    private static Menu openSwingMenu = null;
+    private static Menu backupDbMenu = null;
+    private static void createTrayIcon(){
+        if(!SystemTray.isSupported()) return;
+        final PopupMenu popup = new PopupMenu();
+        final TrayIcon trayIcon =
+                new TrayIcon(Toolkit.getDefaultToolkit().getImage(jarRoot+"hsqldb-icon.png"));
+        final SystemTray tray = SystemTray.getSystemTray();
+       
+        openSwingMenu = new Menu("Open swing tool at database");
+        backupDbMenu = new Menu("Backup database to user home");
+        updateTrayMenus();
+       
+        //Add components to pop-up menu
+        popup.add(openSwingMenu);
+        popup.add(backupDbMenu);
+        popup.addSeparator();
+       
+        MenuItem stopItem = new MenuItem("Stop HSQLDB Manager");
+        stopItem.addActionListener((ev) -> executeCommand(new Command("stop")));
+        popup.add(stopItem);
+        trayIcon.setPopupMenu(popup);
+        trayIcon.setToolTip("HSQLDB Manager is running.");
+        
+        try {
+            tray.add(trayIcon);
+        } catch (AWTException e) {
+            logException(e);
+        }
+        
+    }
+    
+    private static void updateTrayMenus(){
+        if(openSwingMenu == null || backupDbMenu == null) return;
+        openSwingMenu.removeAll();
+        backupDbMenu.removeAll();
+        if(deployedDbs.size() == 0){
+            MenuItem mi = new MenuItem("There's no deployed database.");
+            mi.setEnabled(false);
+            MenuItem mib = new MenuItem("There's no deployed database.");
+            mib.setEnabled(false);
+            openSwingMenu.add(mi);
+            backupDbMenu.add(mib);
+        }
+        String userHome = System.getProperty("user.home");
+        deployedDbs.forEach((n, dd) -> {
+            MenuItem osm = new MenuItem(n);
+            osm.addActionListener((ev) -> CliUtility.openHsqldbSwing(new String[]{"swing", n}));
+            openSwingMenu.add(osm);
+            MenuItem bdm = new MenuItem(n);
+            bdm.addActionListener((ev) -> executeCommand(new Command("backup", n, userHome)));
+            backupDbMenu.add(bdm);
+        });
+        
+        
+    }
+    
+    private static void logInfo(String log){
+        
+        try {
+            System.out.println("init");
+            FileUtils.write(log_output_File, "INFO      ["+new Date()+" ("+System.currentTimeMillis()+")]: "+log+NEW_LINE, "UTF-8", true);
+            System.out.println("end");
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
+    private static void logException(Exception ex){
+        StringBuilder sb = new StringBuilder("EXCEPTION ["+new Date()+" ("+System.currentTimeMillis()+")]: "+ex.getMessage()+NEW_LINE);
+        
+        StackTraceElement[] stackTrace = ex.getStackTrace();
+        for (StackTraceElement s : stackTrace) {
+            sb.append("\t\t\t\t\t\t\t\t\t\t").append(s.toString()).append(NEW_LINE);
+        }
+        try {
+            FileUtils.write(log_output_File, sb.toString(), "UTF-8", true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -34,7 +34,7 @@ public class CliUtility {
     
     public static void main(String[] args){
         //args = new String[]{"backup", "bestbit-server", "test.zip"};
-        //args = new String[]{"swing"};
+        args = new String[]{"stop"};
         System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2018");
         if(args.length == 0){
             printHelp();
@@ -315,7 +315,7 @@ public class CliUtility {
         System.out.println(list);
     }
     
-    private static void openHsqldbSwing(String[] args){
+    public static void openHsqldbSwing(String[] args){
         String jarPath = null;
         try {
             jarPath = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath();
