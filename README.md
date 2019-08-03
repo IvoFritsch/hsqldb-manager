@@ -27,8 +27,8 @@ All the usage is made by the tray icon or by commands in terminal/cmd, calling t
 | sqltool <db_name> | Open the SQL access tool in the provided database. |
 | swing [<db_name>] | Open HSQLDB swing access tool in the provided database(optional). |
 | backup <db_name> [<file_name>] | Makes an hot backup of the database to the current CLI location or provided file/directory(optional). |
-| logs | Print the 'logs.txt' file.\n"
-| clearlogs | Clear the 'logs.txt' file.
+| logs | Print the 'logs.txt' file. |
+| clearlogs | Clear the 'logs.txt' file. |
 
 
 ## Access control:
