@@ -34,8 +34,7 @@ public class CliUtility {
     
     public static void main(String[] args){
         //args = new String[]{"backup", "bestbit-server", "test.zip"};
-        args = new String[]{"stop"};
-        System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2018");
+        System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2019");
         if(args.length == 0){
             printHelp();
             return;

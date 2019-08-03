@@ -81,7 +81,7 @@
                 <fileset dir="" includes="hsqlman"/>  
                 <fileset dir="" includes="hsqlman.bat"/>  
                 <fileset dir="" includes="acl.txt"/>  
-                <fileset dir="" includes="hsqldb-icon.png"/>  
+                <fileset dir="" includes="hsqldb-logo.png"/>  
         </copy>
         <jar destfile="${store.dir}/temp_final.jar" filesetmanifest="skip">
             <zipgroupfileset dir="dist" includes="*.jar"/>

@@ -9,7 +9,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import hsqldb.cli.CliUtility;
 import java.awt.AWTException;
-import java.awt.Desktop;
+import java.awt.Image;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -20,7 +20,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,8 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletException;
@@ -87,7 +84,6 @@ public class HsqldbManager extends AbstractHandler{
         }
         log_output_File = new File(jarRoot+"logs.txt");
         logInfo("HSQLDB Manager started.");
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> executeCommand(new Command("stop"))));
         createTrayIcon();
         try{
             startHsqlServer();
@@ -130,7 +126,7 @@ public class HsqldbManager extends AbstractHandler{
     
     
     private static void executeCommand(Command c){
-        if(!accepting) {
+        if(!accepting && !c.getCommand().equals("stop")) {
             return;
         }
         switch(c.getCommand()){
@@ -173,7 +169,6 @@ public class HsqldbManager extends AbstractHandler{
                 accepting = false;
                 shutdownServer();
                 while(!hsqldbServer.isNotRunning());
-                logInfo("HSQLDB Manager stopped.");
                 System.exit(0);
                 break;
             case "backup":
@@ -339,7 +334,7 @@ public class HsqldbManager extends AbstractHandler{
         if(!SystemTray.isSupported()) return;
         final PopupMenu popup = new PopupMenu();
         final TrayIcon trayIcon =
-                new TrayIcon(Toolkit.getDefaultToolkit().getImage(jarRoot+"hsqldb-icon.png"));
+                new TrayIcon(Toolkit.getDefaultToolkit().getImage(jarRoot+"hsqldb-logo.png").getScaledInstance(16, 16, Image.SCALE_SMOOTH));
         final SystemTray tray = SystemTray.getSystemTray();
        
         openSwingMenu = new Menu("Open swing tool at database");
@@ -393,9 +388,7 @@ public class HsqldbManager extends AbstractHandler{
     private static void logInfo(String log){
         
         try {
-            System.out.println("init");
             FileUtils.write(log_output_File, "INFO      ["+new Date()+" ("+System.currentTimeMillis()+")]: "+log+NEW_LINE, "UTF-8", true);
-            System.out.println("end");
         } catch (IOException ex) {
             ex.printStackTrace();
         }
