@@ -14,7 +14,7 @@ The HSQLDB Manager is an all-in-one jar database, you dont need to have nothing 
 
 ## Usage:
 
-All the usage is made by commands in terminal/cmd, calling the `hsqlman.bat` for Windows or `hsqlman` for Linux, the currently supported commands are:
+All the usage is made by the tray icon or by commands in terminal/cmd, calling the `hsqlman.bat` for Windows or `hsqlman` for Linux, the currently supported commands are:
 
 | Command  | Description |
 | --------------- | ----------- |
@@ -27,6 +27,9 @@ All the usage is made by commands in terminal/cmd, calling the `hsqlman.bat` for
 | sqltool <db_name> | Open the SQL access tool in the provided database. |
 | swing [<db_name>] | Open HSQLDB swing access tool in the provided database(optional). |
 | backup <db_name> [<file_name>] | Makes an hot backup of the database to the current CLI location or provided file/directory(optional). |
+| logs | Print the 'logs.txt' file.\n"
+| clearlogs | Clear the 'logs.txt' file.
+
 
 ## Access control:
 

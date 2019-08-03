@@ -83,18 +83,20 @@ public class HsqldbManager extends AbstractHandler{
             deployedDbs = new Gson().fromJson(FileUtils.readFileToString(deployed_dbs_File, "UTF-8"), type);
         }
         log_output_File = new File(jarRoot+"logs.txt");
-        logInfo("HSQLDB Manager started.");
         createTrayIcon();
         try{
             startHsqlServer();
             if(!deployedDbs.isEmpty() && hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
+                logException(new RuntimeException("HSQLDB Server couldn't start, verify if the port "+DBS_PORT+" is free."));
                 return;
             }
             server.setHandler(new HsqldbManager());
             server.start();
             accepting = true;
+            logInfo("HSQLDB Manager started.");
             server.join();
         } catch (Exception e){
+            e.printStackTrace();
             logException(e);
             System.err.println("The manager is already running or the port "+MANAGER_PORT+" is occupied.");
             System.exit(0);
@@ -109,8 +111,6 @@ public class HsqldbManager extends AbstractHandler{
             return;
         }
         if(hsr.getMethod().equals("POST")){
-            
-            
             response.setStatus(HttpServletResponse.SC_OK);
             response.setContentType("text");
             Command command = new Gson().fromJson(leTodasLinhas(rqst.getReader()), Command.class);
@@ -123,7 +123,6 @@ public class HsqldbManager extends AbstractHandler{
             ex.printStackTrace();
         }
     }
-    
     
     private static void executeCommand(Command c){
         if(!accepting && !c.getCommand().equals("stop")) {
@@ -167,6 +166,7 @@ public class HsqldbManager extends AbstractHandler{
                 break;
             case "stop":
                 accepting = false;
+                logInfo("HSQLDB Manager stopped.");
                 shutdownServer();
                 while(!hsqldbServer.isNotRunning());
                 System.exit(0);
@@ -203,7 +203,7 @@ public class HsqldbManager extends AbstractHandler{
                     sendResponse("Backup created in -> "+finalPath.replace("\\", "/"));
                     logInfo("Backed up database "+c.getName()+" in -> "+finalPath.replace("\\", "/"));
                 } catch (Exception e) {
-                    sendResponse("Exception during backup of the database, run the 'log' command to see the Exception.");
+                    sendResponse("Exception during backup of the database, run the 'logs' command to see the Exception.");
                     logException(e);
                 }
                 break;
@@ -229,14 +229,17 @@ public class HsqldbManager extends AbstractHandler{
         try {
             hsqldbServer.setProperties(p);
         } catch (Exception ex) {
-            sendResponse("Unable to set the HSQLDB properties, the server will not start, run the 'log' command to see the Exception.");
             logException(ex);
+            System.exit(0);
             return;
         }
+            System.err.println(2);
         hsqldbServer.setLogWriter(null); // can use custom writer
         hsqldbServer.setErrWriter(null); // can use custom writer
         hsqldbServer.setNoSystemExit(false);
+            System.err.println(2);
         hsqldbServer.start();
+            System.err.println(4);
     }
     
     private static void shutdownServer(){
@@ -257,7 +260,7 @@ public class HsqldbManager extends AbstractHandler{
         hsqldbServer.setNoSystemExit(true);
         shutdownServer();
         startHsqlServer();
-        sendResponse("Database "+c.getName()+" succesfully deployed at port "+DBS_PORT+"...\n"
+        sendResponse("Database "+c.getName()+" successfully deployed at port "+DBS_PORT+"...\n"
                 + "    Connect to it via the URL 'jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName()+"'");
         logInfo("Deployed database "+c.getName()+".");
         updateDeployedDbsFile();
@@ -273,7 +276,7 @@ public class HsqldbManager extends AbstractHandler{
         hsqldbServer.setNoSystemExit(true);
         shutdownServer();
         startHsqlServer();
-        sendResponse("Database "+c.getName()+" was succesfully removed from de deployed databases...");
+        sendResponse("Database "+c.getName()+" was successfully removed from de deployed databases...");
         logInfo("Undeployed database "+c.getName()+".");
         updateDeployedDbsFile();
         updateTrayMenus();
@@ -364,7 +367,7 @@ public class HsqldbManager extends AbstractHandler{
         if(openSwingMenu == null || backupDbMenu == null) return;
         openSwingMenu.removeAll();
         backupDbMenu.removeAll();
-        if(deployedDbs.size() == 0){
+        if(deployedDbs.isEmpty()){
             MenuItem mi = new MenuItem("There's no deployed database.");
             mi.setEnabled(false);
             MenuItem mib = new MenuItem("There's no deployed database.");
@@ -381,8 +384,6 @@ public class HsqldbManager extends AbstractHandler{
             bdm.addActionListener((ev) -> executeCommand(new Command("backup", n, userHome)));
             backupDbMenu.add(bdm);
         });
-        
-        
     }
     
     private static void logInfo(String log){

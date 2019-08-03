@@ -9,10 +9,13 @@ import com.google.gson.Gson;
 import hsqldb.manager.Command;
 import hsqldb.manager.HsqldbManager;
 import java.awt.GraphicsEnvironment;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
@@ -20,6 +23,7 @@ import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Scanner;
+import org.apache.commons.io.FileUtils;
 import org.hsqldb.cmdline.SqlTool;
 
 /**
@@ -33,7 +37,7 @@ public class CliUtility {
     private final static int SECOND_ARG = 2;
     
     public static void main(String[] args){
-        //args = new String[]{"backup", "bestbit-server", "test.zip"};
+        //args = new String[]{"logs"};
         System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2019");
         if(args.length == 0){
             printHelp();
@@ -71,6 +75,45 @@ public class CliUtility {
                 case "swing":
                     openHsqldbSwing(args);
                     return;
+                case "logs":
+                    InputStream input;
+                    try {
+                        String jarRoot = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+                        if(!jarRoot.endsWith("/")) jarRoot += "/";
+                        File logsFile = new File(jarRoot+"logs.txt");
+                        if(!logsFile.exists()) {
+                            System.out.println("'logs.txt' file doesn't exist.");
+                            return;
+                        }
+                        System.out.println("'logs.txt' file content:\n");
+                        input = new BufferedInputStream(new FileInputStream(logsFile));
+                        byte[] buffer = new byte[8192];
+
+                        for (int length = 0; (length = input.read(buffer)) != -1;) {
+                            System.out.write(buffer, 0, length);
+                        }
+                        input.close();
+                    } catch(Exception e){
+                        e.printStackTrace();
+                    } finally {
+                    }
+                    return;
+                case "clearlogs":
+                    try {
+                        String jarRoot = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
+                        if(!jarRoot.endsWith("/")) jarRoot += "/";
+                        File logsFile = new File(jarRoot+"logs.txt");
+                        if(!logsFile.exists()) {
+                            System.out.println("'logs.txt' file doesn't exist.");
+                            return;
+                        }
+                        FileUtils.write(logsFile, "", "UTF-8");
+                    } catch(Exception e){
+                        e.printStackTrace();
+                    } finally {
+                    }
+                    System.out.println("The 'logs.txt' file was cleared.");
+                    return;
             }
         }
         printHelp();
@@ -87,7 +130,9 @@ public class CliUtility {
                 + "    list                      -  List all the currently deployed and running databases.\n"
                 + "    sqltool <db_name>         -  Open the SQL access tool in the provided database.\n"
                 + "    swing [<db_name>]         -  Open HSQLDB swing access tool in the provided database(optional).\n"
-                + "    backup <db_name> [<file>] -  Makes an hot backup of the database to the current CLI location or provided file/directory(optional).");
+                + "    backup <db_name> [<file>] -  Makes an hot backup of the database to the current CLI location or provided file/directory(optional).\n"
+                + "    logs                      -  Print the 'logs.txt' file.\n"
+                + "    clearlogs                 -  Clear the 'logs.txt' file.");
     }
     
     private static void sendDeploy(String[] args) {
@@ -214,7 +259,7 @@ public class CliUtility {
                 if(manager.isAlive()){
                     System.err.println("Manager doesn't start yet, but it's still initializing.");
                 } else {
-                    System.err.println("Manager couldn't start, verify if the ports "+HsqldbManager.MANAGER_PORT+" and "+HsqldbManager.DBS_PORT+" are free for the manager and the database.");
+                    System.err.println("Manager couldn't start, verify if the ports "+HsqldbManager.MANAGER_PORT+" and "+HsqldbManager.DBS_PORT+" are free for the manager and the database. If they are, run the 'logs' command to see the possible cause of the error.");
                 }
             }
         } catch (Exception ex) {
