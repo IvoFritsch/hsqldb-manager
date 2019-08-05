@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.UIManager;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.ServerConnector;
@@ -88,16 +89,19 @@ public class HsqldbManager extends AbstractHandler{
             startHsqlServer();
             if(!deployedDbs.isEmpty() && hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
                 logException(new RuntimeException("HSQLDB Server couldn't start, verify if the port "+DBS_PORT+" is free."));
+                newTrayNotification("HSQLDB Server couldn't start", "Verify if the port "+DBS_PORT+" is free.", TrayIcon.MessageType.ERROR);
                 return;
             }
             server.setHandler(new HsqldbManager());
             server.start();
             accepting = true;
             logInfo("HSQLDB Manager started.");
+            newTrayNotification("HSQLDB Manager started", "HSQLDB Manager is now running.");
             server.join();
         } catch (Exception e){
             e.printStackTrace();
             logException(e);
+            newTrayNotification("Exception during HSQLMAN startup", "Run the 'logs' command to see the possible cause.", TrayIcon.MessageType.ERROR);
             System.err.println("The manager is already running or the port "+MANAGER_PORT+" is occupied.");
             System.exit(0);
         }
@@ -196,14 +200,14 @@ public class HsqldbManager extends AbstractHandler{
                     }else{
                         finalPath = c.getPath();
                     }
-                    
-                    
                     pack(jarRoot+"temp_bkp", finalPath);
                     FileUtils.deleteDirectory(new File(jarRoot+"temp_bkp"));
                     sendResponse("Backup created in -> "+finalPath.replace("\\", "/"));
                     logInfo("Backed up database "+c.getName()+" in -> "+finalPath.replace("\\", "/"));
+                    newTrayNotification("Backup done", "Backed up database "+c.getName()+" in:\n"+finalPath.replace("\\", "/"));
                 } catch (Exception e) {
                     sendResponse("Exception during backup of the database, run the 'logs' command to see the Exception.");
+                    newTrayNotification("Exception during backup", "Exception during backup of the database, run the 'logs' command to see the Exception.", TrayIcon.MessageType.ERROR);
                     logException(e);
                 }
                 break;
@@ -233,13 +237,10 @@ public class HsqldbManager extends AbstractHandler{
             System.exit(0);
             return;
         }
-            System.err.println(2);
         hsqldbServer.setLogWriter(null); // can use custom writer
         hsqldbServer.setErrWriter(null); // can use custom writer
         hsqldbServer.setNoSystemExit(false);
-            System.err.println(2);
         hsqldbServer.start();
-            System.err.println(4);
     }
     
     private static void shutdownServer(){
@@ -333,10 +334,11 @@ public class HsqldbManager extends AbstractHandler{
     
     private static Menu openSwingMenu = null;
     private static Menu backupDbMenu = null;
+    private static TrayIcon trayIcon = null;
     private static void createTrayIcon(){
         if(!SystemTray.isSupported()) return;
         final PopupMenu popup = new PopupMenu();
-        final TrayIcon trayIcon =
+        trayIcon =
                 new TrayIcon(Toolkit.getDefaultToolkit().getImage(jarRoot+"hsqldb-logo.png").getScaledInstance(16, 16, Image.SCALE_SMOOTH));
         final SystemTray tray = SystemTray.getSystemTray();
        
@@ -361,6 +363,14 @@ public class HsqldbManager extends AbstractHandler{
             logException(e);
         }
         
+    }
+    private static void newTrayNotification(String title, String message, TrayIcon.MessageType type){
+        if(trayIcon == null) return;
+        trayIcon.displayMessage(title, message, type);
+    }
+    
+    private static void newTrayNotification(String title, String message){
+        newTrayNotification(title, message, TrayIcon.MessageType.INFO);
     }
     
     private static void updateTrayMenus(){
