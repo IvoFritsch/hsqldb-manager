@@ -264,6 +264,7 @@ public class HsqldbManager extends AbstractHandler{
         sendResponse("Database "+c.getName()+" successfully deployed at port "+DBS_PORT+"...\n"
                 + "    Connect to it via the URL 'jdbc:hsqldb:hsql://localhost:"+DBS_PORT+"/"+c.getName()+"'");
         logInfo("Deployed database "+c.getName()+".");
+        newTrayNotification("Database deployed", "Deployed database "+c.getName()+".");
         updateDeployedDbsFile();
         updateTrayMenus();
     }
@@ -279,6 +280,7 @@ public class HsqldbManager extends AbstractHandler{
         startHsqlServer();
         sendResponse("Database "+c.getName()+" was successfully removed from de deployed databases...");
         logInfo("Undeployed database "+c.getName()+".");
+        newTrayNotification("Database undeployed", "Undeployed database "+c.getName()+".");
         updateDeployedDbsFile();
         updateTrayMenus();
     }
