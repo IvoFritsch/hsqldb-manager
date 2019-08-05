@@ -1,2 +1,2 @@
 @echo off
-java -jar "%~dp0\hsqldb-manager.jar" %1 %2 %3
+java -cp "%~dp0\hsqldb-manager.jar" hsqldb.cli.CliUtility %1 %2 %3

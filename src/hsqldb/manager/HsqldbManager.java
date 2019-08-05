@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.server.Request;
@@ -352,9 +353,17 @@ public class HsqldbManager extends AbstractHandler{
         popup.add(openSwingMenu);
         popup.add(backupDbMenu);
         popup.addSeparator();
-       
+        MenuItem aboutItem = new MenuItem("About HSQLDB Manager");
+        aboutItem.addActionListener((ev) -> {
+            try { 
+                UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel"); 
+            } catch(Exception ignored){}
+            JOptionPane.showMessageDialog(null, "HSQLDB Manager\n\nAn standalone all-in-one jar Database + Manager utility to easily manage your HSQLDB Databases, running all of them in one single server and port.\n\nHaftware SI - 2019", "About", JOptionPane.PLAIN_MESSAGE);
+            });
+        
         MenuItem stopItem = new MenuItem("Stop HSQLDB Manager");
         stopItem.addActionListener((ev) -> executeCommand(new Command("stop")));
+        popup.add(aboutItem);
         popup.add(stopItem);
         trayIcon.setPopupMenu(popup);
         trayIcon.setToolTip("HSQLDB Manager is running.");

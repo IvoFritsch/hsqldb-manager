@@ -1,7 +1,7 @@
 # HSQLDB Manager
 An standalone all-in-one jar Database + Manager utility to easily manage your HSQLDB Databases, running all of them in one single server and port.
 
-Haftware SI - 2018
+Haftware SI - 2019
 
 ## Installation:
 The HSQLDB Manager is an all-in-one jar database, you dont need to have nothing more(unless Java) installed in your machine, the installation is as easy as you may want:
