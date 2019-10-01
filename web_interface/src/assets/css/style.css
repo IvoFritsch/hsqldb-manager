@@ -1,0 +1,137 @@
+body {
+  margin: 0;
+  font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5 {
+  font-weight: 100;
+}
+
+.new-web-session-container {
+  height: 100vh;
+}
+
+.query-box-editor { 
+  flex: 1;
+  font-family: "Fira code", "Fira Mono", monospace !important;
+  font-size: 16px !important;
+}
+
+.query-box-editor>textarea, .query-box-editor>pre {
+  padding: 3px !important;
+} 
+
+.Pane.vertical.Pane1 {
+  overflow: auto;
+  background-color: #f8f8f8;
+}
+
+.Pane.horizontal.Pane1 {
+  overflow: auto;
+}
+
+.Pane.horizontal.Pane2 {
+  overflow: auto;
+}
+
+.Resizer {
+  background: #000;
+  opacity: .2;
+  z-index: 1;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  -moz-background-clip: padding;
+  -webkit-background-clip: padding;
+  background-clip: padding-box;
+}
+
+.Resizer:hover {
+  -webkit-transition: all 2s ease;
+  transition: all 2s ease;
+}
+
+.Resizer.horizontal {
+  height: 11px;
+  margin: -5px 0;
+  border-top: 5px solid rgba(255, 255, 255, 0);
+  border-bottom: 5px solid rgba(255, 255, 255, 0);
+  cursor: row-resize;
+  width: 100%;
+}
+
+.Resizer.horizontal:hover {
+  border-top: 5px solid rgba(0, 0, 0, 0.5);
+  border-bottom: 5px solid rgba(0, 0, 0, 0.5);
+}
+
+.Resizer.vertical {
+  width: 11px;
+  margin: 0 -5px;
+  border-left: 5px solid rgba(255, 255, 255, 0);
+  border-right: 5px solid rgba(255, 255, 255, 0);
+  cursor: col-resize;
+}
+
+.Resizer.vertical:hover {
+  border-left: 5px solid rgba(0, 0, 0, 0.5);
+  border-right: 5px solid rgba(0, 0, 0, 0.5);
+}
+
+.Resizer.disabled {
+  cursor: not-allowed;
+}
+
+.Resizer.disabled:hover {
+  border-color: transparent;
+}
+
+.database-name-container {
+  border-radius: 0px !important;
+  font-size: 18px;
+  overflow: hidden;
+  padding: 3px 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.run-sql-button {
+  position: absolute !important;
+  bottom: 20px;
+  right: 20px;
+}
+
+.run-sql-button, .database-name-container {
+  background-color: #1976d2 !important;
+}
+
+.run-sql-button, .database-name-container, .database-name-container button {
+  color: #fff !important;
+}
+
+.list-tables-container {
+  padding: 0px !important;
+}
+
+.context-menu-container {
+  position: fixed;
+  z-index: 100;
+  background: #fff;
+}
+
+.context-menu-container ul {
+  padding: 0px !important;
+}
+
+.query-results-container {
+  height: 100%;
+}
+
+.query-results-container.loading {
+  opacity: 0.5;
+  background-color: #efefef;
+}
