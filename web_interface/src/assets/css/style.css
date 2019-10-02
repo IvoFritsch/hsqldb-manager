@@ -9,7 +9,7 @@ h1, h2, h3, h4, h5 {
   font-weight: 100;
 }
 
-.new-web-session-container {
+.new-web-session-container, .select-databases-container {
   height: 100vh;
 }
 
@@ -134,4 +134,45 @@ h1, h2, h3, h4, h5 {
 .query-results-container.loading {
   opacity: 0.5;
   background-color: #efefef;
+}
+
+.query-results-header {
+  color: #444 !important;
+}
+
+.query-results-header>h6 {
+  color: #888 !important;
+  margin: 0px;
+  margin-left: 2px;
+  position: relative;
+  top: 1px;
+}
+
+.result-cell {
+  white-space: nowrap;
+  max-width: 590px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.query-sql-error {
+  background-color: #ff5252;
+  box-shadow: 0 0 6px -1px #b71c1c;
+  color: #fff;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: calc(100% - 20px);
+  padding: 10px 0;
+}
+
+.query-sql-error>h4, .query-sql-error>h5 {
+  margin: 0px;
+  padding-left: 10px;  
+  padding-right: 10px;  
+}
+
+.query-sql-error>h4 {  
+  font-weight: 400;
+  margin-top: 10px;
 }

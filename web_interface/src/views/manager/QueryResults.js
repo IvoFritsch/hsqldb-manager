@@ -4,13 +4,6 @@ import SD from 'simplerdux'
 
 export class QueryResults extends Component {
   state = {
-    columns: ['id', 'name', 'date'],
-    result: [
-      [1, 'Ivo Fritsch', '10/10/2018'],
-      [2, 'Daniel Schneider', null],
-      [3, 'Pit Fritsch', '08/10/2018'],
-      [4, 'Carlos Guilherme', '09/10/2018'],
-    ],
     sortedResult: undefined,
     sort: {
       index: undefined,
@@ -41,9 +34,10 @@ export class QueryResults extends Component {
   }
 
   sortTableData = () => {
-    const {sort, result} = this.state
-    if(!sort.column) return
-    this.setState({sortedResult: [...result].sort(this.sortFunction)})
+    const {rs} = SD.getState()
+    const {sort} = this.state
+    if(!sort.column || !rs.data) return
+    this.setState({sortedResult: [...rs.data].sort(this.sortFunction)})
   }
 
   sortFunction = (a, b) => {
@@ -65,34 +59,42 @@ export class QueryResults extends Component {
   }
 
   render() {
-    const {isLoadingQuery} = SD.getState()
-    const {columns, result, sortedResult, sort} = this.state
+    const {isLoadingQuery, rs, rsErrorMessage} = SD.getState()
+    const {sortedResult, sort} = this.state
     
     return (
       <div className={`query-results-container ${isLoadingQuery ? 'loading' : ''}`}>
-        <Table size='small'>
-          <TableHead>
-            <TableRow>
-              {columns.map((h, index) => (
-                <TableCell key={h}>
-                  <TableSortLabel active={sort.column === h} direction={sort.column === h ? sort.direction : undefined} onClick={() => this.sortTable(h, index)}>
-                    {h}
-                  </TableSortLabel>
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {((sort.column ? sortedResult: result) || []).map((row, index) =>
-              <TableRow hover key={index}>
-                {row.map((cell, index)=> 
-                  <TableCell key={index}>{cell}</TableCell>
-                )}
+        {rsErrorMessage &&
+          <div className='query-sql-error'>
+            <h5>sql error</h5>
+            <h4>{rsErrorMessage}</h4>
+          </div>
+        }
+        {rs && !rsErrorMessage &&
+          <Table size='small'>
+            <TableHead>
+              <TableRow>
+                {(rs.headers || []).map((h, index) => (
+                  <TableCell key={h}>
+                    <TableSortLabel className='query-results-header' active={sort.column === h} direction={sort.column === h ? sort.direction : undefined} onClick={() => this.sortTable(h, index)}>
+                      {h} <h6>({rs.types[index]})</h6>
+                    </TableSortLabel>
+                  </TableCell>
+                ))}
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHead>
+
+            <TableBody>
+              {((sort.column ? sortedResult : rs.data) || []).map((row, index) =>
+                <TableRow hover key={index}>
+                  {row.map((cell, index)=> 
+                    <TableCell key={index} className='result-cell' title={cell}>{cell}</TableCell>
+                  )}
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        }
       </div>
     )
   }

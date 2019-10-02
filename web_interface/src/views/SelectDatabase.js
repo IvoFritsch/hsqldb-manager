@@ -1,19 +1,34 @@
 import React, { Component } from 'react'
 import SD from 'simplerdux'
 import {List, Grid, ListItem, ListItemText} from '@material-ui/core'
+import HWApiFetch from 'hw-api-fetch'
+import hsqldb_logo from '../assets/imgs/hsqldb-logo.png'
 
 export class SelectDatabase extends Component {
   state = {
-    databases: ['flexypoints_server', 'quickmenu', 'mixpad', 'ivo_server']
+    databases: undefined
+  }
+
+  componentDidMount() {
+    this.getDatabases()
+  }
+  
+  getDatabases = async () => {
+    try {
+      const databases = await HWApiFetch.get('list')
+      this.setState({databases})
+    } catch (error) {
+      setTimeout(this.getDatabases, 1000)
+    }
   }
 
   render() {
     const {databases} = this.state
 
     return (
-      <Grid container direction='column' justify='center' alignItems='center'>
+      <Grid container direction='column' justify='center' alignItems='center' className='select-databases-container'>
+        <img src={hsqldb_logo} alt='hsqldb logo' />
         <h2>Select Database</h2>
-        <hr />
         <List>
           {databases && databases.map(d => 
             <ListItem

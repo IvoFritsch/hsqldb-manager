@@ -1,15 +1,27 @@
 import React, { Component } from 'react'
 import {List, ListItem, ListItemText, Paper, IconButton, Icon} from '@material-ui/core'
 import SD from 'simplerdux'
+import HWApiFetch from 'hw-api-fetch'
 
 export class TablesList extends Component {
   state = {
-    tables: ['users', 'pedidos', 'produtos', 'files']
+    tables: undefined
+  }
+
+  componentDidMount() {
+    this.getTables()
+  }
+  
+  getTables = async () => {
+    const {connectionId} = SD.getState()
+    const {status, tables} = await HWApiFetch.get(`metadata/${connectionId}`)
+    if(status !== 'OK') return
+    this.setState({tables})
   }
 
   selectToQuery = (table) => {
-    const {focusEditor} = SD.getState()
-    SD.setState({sql: `select * from ${table.toLowerCase()};`}, true)
+    const {focusEditor, setSql} = SD.getState()
+    if(setSql) setSql(`select * from ${table};`)
     if(focusEditor) focusEditor()
   }
 
@@ -32,19 +44,19 @@ export class TablesList extends Component {
           <span>
             {database}
           </span>
-          <IconButton>
+          <IconButton onClick={this.getTables}>
             <Icon>refresh</Icon>
           </IconButton>
         </Paper>
         <List className='list-tables-container' component='nav'>
           {tables && tables.map(t => 
             <ListItem 
-              key={t} 
-              onClick={() => this.selectToQuery(t)} 
-              onContextMenu={e => this.customContextMenu(e, t)}
+              key={t.name} 
+              onClick={() => this.selectToQuery(t.name.toLowerCase())} 
+              onContextMenu={e => this.customContextMenu(e, t.name.toLowerCase())}
               button 
             >
-              <ListItemText primary={t} />
+              <ListItemText primary={t.name.toLowerCase()} />
             </ListItem>
           )}
         </List>

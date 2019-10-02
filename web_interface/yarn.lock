@@ -4717,6 +4717,13 @@ https-browserify@^1.0.0:
   resolved "https://registry.yarnpkg.com/https-browserify/-/https-browserify-1.0.0.tgz#ec06c10e0a34c0f2faf199f7fd7fc78fffd03c73"
   integrity sha1-7AbBDgo0wPL68Zn3/X/Hj//QPHM=
 
+hw-api-fetch@^1.0.11:
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/hw-api-fetch/-/hw-api-fetch-1.0.11.tgz#d0615ef7619f18b7981240f806d90a5c39781f61"
+  integrity sha512-lisCiK9ZsMn68wlmZ93JnLKuXY2CCIHsf1fNv0fptmu97usBBn2Tl9lWM9e6vMMd34UX9ok0V3N7dKND48fBOQ==
+  dependencies:
+    pubsub-js "^1.7.0"
+
 hyphenate-style-name@^1.0.3:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/hyphenate-style-name/-/hyphenate-style-name-1.0.3.tgz#097bb7fa0b8f1a9cf0bd5c734cf95899981a9b48"
@@ -8008,6 +8015,11 @@ public-encrypt@^4.0.0:
     parse-asn1 "^5.0.0"
     randombytes "^2.0.1"
     safe-buffer "^5.1.2"
+
+pubsub-js@^1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/pubsub-js/-/pubsub-js-1.7.0.tgz#eca97f9a4217bef62b2d3aaa1552005260cc2e49"
+  integrity sha512-Pb68P9qFZxnvDipHMuj9oT1FoIgBcXJ9C9eWdHCLZAnulaUoJ3+Y87RhGMYilWpun6DMWVmvK70T4RP4drZMSA==
 
 pump@^2.0.0:
   version "2.0.1"

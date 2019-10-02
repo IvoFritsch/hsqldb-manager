@@ -6,7 +6,7 @@ export class CustomContextMenu extends Component {
   options = ['Select', 'Insert', 'Update', 'Delete']
 
   setQuery = (option, table) => {
-    const {focusEditor} = SD.getState()
+    const {focusEditor, setSql} = SD.getState()
     let query = ''
 
     switch(option.toLowerCase()) {
@@ -23,9 +23,9 @@ export class CustomContextMenu extends Component {
         query = `select * from ${table};`
     }
 
-    SD.setState({sql: query}, true)
-    this.close()
+    if(setSql) setSql(query)
     if(focusEditor) focusEditor()
+    this.close()
   }
 
   close = () => SD.setState({contextMenu: undefined})

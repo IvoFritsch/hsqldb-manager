@@ -4,6 +4,16 @@ import './assets/css/style.css'
 import App from './App';
 import * as serviceWorker from './serviceWorker';
 import Simplerdux from 'simplerdux'
+import HWApiFetch from 'hw-api-fetch'
+ 
+HWApiFetch.init({
+  host: 'http://192.168.0.11:35888/api/',
+  cookiesToHeader: ['JSESSIONID'],
+  log: true,
+  fetchProperties: {
+    credentials: 'include',
+  }
+})
 
 ReactDOM.render(<Simplerdux.Provider app={App} />, document.getElementById('root'));
 
