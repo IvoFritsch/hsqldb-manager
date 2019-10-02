@@ -115,6 +115,7 @@ h1, h2, h3, h4, h5 {
 
 .list-tables-container {
   padding: 0px !important;
+  padding-bottom: 200px !important;
 }
 
 .context-menu-container {
@@ -166,13 +167,24 @@ h1, h2, h3, h4, h5 {
   padding: 10px 0;
 }
 
-.query-sql-error>h4, .query-sql-error>h5 {
+.query-sql-update {
+  background-color: #29B6F6;
+  box-shadow: 0 0 6px -1px #01579B;
+  color: #fff;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: calc(100% - 20px);
+  padding: 10px 0;
+}
+
+.query-sql-update>h4, .query-sql-update>h5, .query-sql-error>h4, .query-sql-error>h5 {
   margin: 0px;
   padding-left: 10px;  
   padding-right: 10px;  
 }
 
-.query-sql-error>h4 {  
+.query-sql-update>h4, .query-sql-error>h4 {  
   font-weight: 400;
   margin-top: 10px;
 }

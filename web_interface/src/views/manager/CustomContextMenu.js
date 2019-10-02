@@ -3,7 +3,7 @@ import {ClickAwayListener, Paper, List, ListItem, ListItemText} from '@material-
 import SD from 'simplerdux'
 
 export class CustomContextMenu extends Component {
-  options = ['Select', 'Insert', 'Update', 'Delete']
+  options = ['select', 'insert', 'update', 'delete']
 
   setQuery = (option, table) => {
     const {focusEditor, setSql} = SD.getState()

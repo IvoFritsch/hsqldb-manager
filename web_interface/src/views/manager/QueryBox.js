@@ -27,20 +27,32 @@ export class QueryBox extends Component {
 
   runQuery = async () => {
     const {sql=''} = this.state
-    const {connectionId} = SD.getState()
-    SD.setState({isLoadingQuery: true, rs: undefined, rsErrorMessage: undefined})
+    const {isLoadingQuery, connectionId} = SD.getState()
+    
+    if(isLoadingQuery) return
+
+    SD.setState({isLoadingQuery: true, rs: undefined, rsUpdateMessage: undefined, rsErrorMessage: undefined})
     this.focusEditor()
 
     try {
       SD.setState({sql}, true)
       const response = await HWApiFetch.post(`query/${connectionId}`, {sql})
       
-      if(response.status === 'OK') SD.setState({rs: response.rs})
+      if(response.status === 'RESULT_SET') SD.setState({rs: response.rs})
+      if(response.status === 'UPDATE') SD.setState({rsUpdateMessage: response.message})
       if(response.status === 'SQL_ERROR') SD.setState({rsErrorMessage: response.message})
       
+      this.shouldRefreshTables(sql)
+
     } finally {
       SD.setState({isLoadingQuery: false})
     }
+  }
+
+  shouldRefreshTables = (sql) => {
+    if(!sql.includes('create') && !sql.includes('alter') && !sql.includes('drop')) return
+    const {refreshTables} = SD.getState()
+    if(refreshTables) refreshTables()
   }
 
   render() {

@@ -59,18 +59,24 @@ export class QueryResults extends Component {
   }
 
   render() {
-    const {isLoadingQuery, rs, rsErrorMessage} = SD.getState()
+    const {isLoadingQuery, rs, rsUpdateMessage, rsErrorMessage} = SD.getState()
     const {sortedResult, sort} = this.state
     
     return (
       <div className={`query-results-container ${isLoadingQuery ? 'loading' : ''}`}>
+        {rsUpdateMessage &&
+          <div className='query-sql-update'>
+            <h5>sql info</h5>
+            <h4>{rsUpdateMessage}</h4>
+          </div>
+        }
         {rsErrorMessage &&
           <div className='query-sql-error'>
             <h5>sql error</h5>
             <h4>{rsErrorMessage}</h4>
           </div>
         }
-        {rs && !rsErrorMessage &&
+        {rs &&
           <Table size='small'>
             <TableHead>
               <TableRow>

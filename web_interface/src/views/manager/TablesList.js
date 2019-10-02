@@ -10,6 +10,7 @@ export class TablesList extends Component {
 
   componentDidMount() {
     this.getTables()
+    SD.setState({refreshTables: this.getTables})
   }
   
   getTables = async () => {
