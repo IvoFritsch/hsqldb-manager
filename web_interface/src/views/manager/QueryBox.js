@@ -58,6 +58,20 @@ export class QueryBox extends Component {
   }
 
   saveCommands = (sql) => {
+    const commands = ['select', 'insert', 'update', 'delete', 'create', 'alter', 'drop']
+
+    let finished = false
+
+    while(!finished) {
+
+      finished = true
+    }
+    
+    commands.forEach(command => {
+      console.log(
+      sql.indexOf(command)
+      )
+    })
   }
 
   render() {
