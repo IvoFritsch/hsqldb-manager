@@ -26,7 +26,7 @@ export class QueryBox extends Component {
   }
 
   runQuery = async () => {
-    const {sql=''} = this.state
+    let {sql=''} = this.state
     const {isLoadingQuery, connectionId} = SD.getState()
     
     if(isLoadingQuery) return
@@ -42,6 +42,8 @@ export class QueryBox extends Component {
       if(response.status === 'UPDATE') SD.setState({rsUpdateMessage: response.message})
       if(response.status === 'SQL_ERROR') SD.setState({rsErrorMessage: response.message})
       
+      sql = sql.toLowerCase()
+      this.saveCommands(sql)
       this.shouldRefreshTables(sql)
 
     } finally {
@@ -53,6 +55,9 @@ export class QueryBox extends Component {
     if(!sql.includes('create') && !sql.includes('alter') && !sql.includes('drop')) return
     const {refreshTables} = SD.getState()
     if(refreshTables) refreshTables()
+  }
+
+  saveCommands = (sql) => {
   }
 
   render() {
