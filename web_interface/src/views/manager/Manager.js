@@ -27,7 +27,7 @@ export class Manager extends Component {
   }
 
   render() {
-    const {h_pane_position, v_pane_position, contextMenu} = SD.getState()
+    const {h_pane_position, v_pane_position, contextMenu, isLoadingQuery, executionTime} = SD.getState()
 
     return (
       <>
@@ -38,6 +38,7 @@ export class Manager extends Component {
           onChange={size => SD.setState({v_pane_position: size}, true)}
           minSize={120}
           maxSize={-120}
+          pane1Style={{marginBottom: '29px', paddingTop:'60px'}}
         >
           <TablesList />
           <SplitPane 
@@ -46,11 +47,17 @@ export class Manager extends Component {
             onChange={size => SD.setState({h_pane_position: size}, true)}
             minSize={120}
             maxSize={-120}
+            pane2Style={{marginBottom: '29px'}}
           >
             <QueryBox />
             <QueryResults />
           </SplitPane>
         </SplitPane>
+        
+      
+        <div style={{position:'fixed', width: '100%', backgroundColor:'#4caf50', padding:'5px', bottom: '0px', color: 'white', zIndex: '10', height: '19px'}}>
+          {isLoadingQuery ? "Executing..." : (executionTime ? `Query executed in ${(executionTime / 100000).toFixed(2)} ms | Ready to execute` : 'Ready to execute')}
+        </div>
       </>
     )
   }
