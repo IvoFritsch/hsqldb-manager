@@ -32,6 +32,16 @@ export class Manager extends Component {
       if(runQuery) runQuery()
       return false
     }
+    
+    if(e.keyCode === 38) {
+      const {historyQuery} = SD.getState()
+      if(historyQuery) historyQuery(1)
+    }
+    
+    if(e.keyCode === 40) {
+      const {historyQuery} = SD.getState()
+      if(historyQuery) historyQuery(0)
+    }
   }
 
   render() {
@@ -63,7 +73,7 @@ export class Manager extends Component {
         </SplitPane>
         
       
-        <div style={{position:'fixed', width: '100%', backgroundColor:'#4caf50', padding:'5px', bottom: '0px', color: 'white', zIndex: '10', height: '19px'}}>
+        <div style={{position:'fixed', width: '100%', backgroundColor:'#4caf50', padding:'5px 20px', bottom: '0px', color: 'white', zIndex: '10', height: '19px'}}>
           {isLoadingQuery ? "Executing..." : (executionTime ? `Query executed in ${(executionTime / 100000).toFixed(2)} ms | Ready to execute` : 'Ready to execute')}
         </div>
       </>

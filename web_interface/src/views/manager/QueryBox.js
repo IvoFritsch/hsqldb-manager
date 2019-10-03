@@ -9,20 +9,62 @@ import 'prismjs/themes/prism.css'
 
 export class QueryBox extends Component {
   state = {
-    sql: SD.getState().sql || ''
+    sql: SD.getState().sql || '',
+    historyInfo: undefined
   }
+  historyJobActive = false
 
   componentDidMount() {
-    SD.setState({setSql: this.setSql, focusEditor: this.focusEditor, runQuery: this.runQuery})
+    SD.setState({historyQuery: this.historyQuery, setSql: this.setSql, focusEditor: this.focusEditor, runQuery: this.runQuery})
+  }
+
+  historyQuery = (direction) => {
+    if(this.historyJobActive) return    
+    const textarea = this.getTextArea()
+    if(!textarea) return
+
+    let {sql='', historyInfo={query: ''}} = this.state
+    let {executedQueries=[]} = SD.getState()
+    const selection = textarea.selectionStart
+
+    if(historyInfo.selection !== undefined && historyInfo.selection !== selection) historyInfo = {query: ''}
+    let queryIndex = historyInfo.queryIndex !== undefined ? historyInfo.queryIndex : executedQueries.length
+
+    if(direction === 0) queryIndex++
+    else queryIndex--
+
+    if(queryIndex < 0 || queryIndex >= executedQueries.length) {
+      this.setCaretPositionToSelection(textarea, selection)
+      return
+    }
+
+    this.historyJobActive = true
+    const query = executedQueries[queryIndex]
+    this.setState({
+      sql: `${sql.slice(0, selection)}${query}${sql.slice(selection+historyInfo.query.length)}`,
+      historyInfo: { selection, queryIndex, query}
+    }, () => this.setCaretPositionToSelection(textarea, selection))
+  }
+
+  setCaretPositionToSelection = (textarea, selection) => {
+    setTimeout(() => {
+      this.historyJobActive = false
+      textarea.selectionStart = selection;
+      textarea.selectionEnd = selection;
+    }, 50);
   }
 
   setSql = (sql='') => this.setState({sql})
 
   focusEditor = () => {
+    const textarea = this.getTextArea()
+    if(textarea) textarea.focus()
+  }
+
+  getTextArea = () => {
     const editorContainer = document.getElementById('editor-container')
     if(!editorContainer) return
-    const textarea = editorContainer.getElementsByTagName('textarea')[0]
-    if(textarea) textarea.focus()
+    return editorContainer.getElementsByTagName('textarea')[0]
   }
 
   runQuery = async () => {
@@ -58,20 +100,41 @@ export class QueryBox extends Component {
   }
 
   saveCommands = (sql) => {
-    const commands = ['select', 'insert', 'update', 'delete', 'create', 'alter', 'drop']
-
+    sql = sql.trim()
+    const queries = []
+    let auxSql = sql
     let finished = false
-
+    let maxTries = 100;
     while(!finished) {
+      let startIndex = auxSql.length
+      let endIndex = auxSql.length
 
-      finished = true
+      startIndex = this.verifyQueryIndex(auxSql, startIndex)
+      auxSql = auxSql.substring(startIndex+1)
+      endIndex = this.verifyQueryIndex(auxSql, endIndex)
+      auxSql = auxSql.substring(endIndex)
+      
+      queries.push(sql.substring(startIndex, endIndex+1).trim())
+      sql = auxSql
+      
+      if(maxTries <=0 || sql.length === 0) finished = true
+      maxTries--
     }
-    
-    commands.forEach(command => {
-      console.log(
-      sql.indexOf(command)
-      )
-    })
+
+    let {executedQueries=[]} = SD.getState()
+    executedQueries = executedQueries.filter(query => !queries.includes(query))
+    executedQueries = [...executedQueries, ...queries]
+    if(executedQueries.length > 100) executedQueries = executedQueries.slice(executedQueries.length-100)
+    SD.setState({executedQueries}, true)
+  }
+
+  verifyQueryIndex = (sql, index) => {
+    const commands = ['select', 'insert', 'update', 'delete', 'create', 'alter', 'drop']
+    for(const command of commands) {
+      const i = sql.indexOf(command)
+      if(i > -1 && i < index) index = i
+    }
+    return index
   }
 
   render() {
