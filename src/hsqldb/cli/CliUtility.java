@@ -37,7 +37,7 @@ public class CliUtility {
     private final static int SECOND_ARG = 2;
     
     public static void main(String[] args){
-        //args = new String[]{"logs"};
+        args = new String[]{"sqltool", "bestbit-platform"};
         System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2019");
         if(args.length == 0){
             printHelp();
@@ -114,6 +114,9 @@ public class CliUtility {
                     }
                     System.out.println("The 'logs.txt' file was cleared.");
                     return;
+                case "webtool":
+                    sendWebtoolCommand(args);
+                    return;
             }
         }
         printHelp();
@@ -130,6 +133,9 @@ public class CliUtility {
                 + "    list                      -  List all the currently deployed and running databases.\n"
                 + "    sqltool <db_name>         -  Open the SQL access tool in the provided database.\n"
                 + "    swing [<db_name>]         -  Open HSQLDB swing access tool in the provided database(optional).\n"
+                + "    webtool start             -  Start the web access tool server.\n"
+                + "    webtool pemit             -  Permits the next client to open an session in the access tool.\n"
+                + "    webtool stop              -  Stop the web access tool server, invalidating all the sessions.\n"
                 + "    backup <db_name> [<file>] -  Makes an hot backup of the database to the current CLI location or provided file/directory(optional).\n"
                 + "    logs                      -  Print the 'logs.txt' file.\n"
                 + "    clearlogs                 -  Clear the 'logs.txt' file.");
@@ -179,6 +185,31 @@ public class CliUtility {
         String resp = sendCommand(new Command("undeploy", args[FIRST_ARG]));
         if(resp == null) return;
         System.out.println(resp);
+    }
+
+    private static void sendWebtoolCommand(String[] args) {
+        if(args.length < 2){
+            printWebtoolHelp();
+            return;
+        }
+        switch(args[FIRST_ARG]){
+            case "start": case "permit": case "stop":
+                break;
+            default:
+                printWebtoolHelp();
+                return;
+        }
+        String resp = sendCommand(new Command("webtool", args[FIRST_ARG]));
+        if(resp == null) return;
+        System.out.println(resp);
+    }
+    
+    private static void printWebtoolHelp(){
+        System.out.println("Control the web access tool.\n"
+                + "    Usage:\n"
+                + "    webtool start    -  Start the web access tool server.\n"
+                + "    webtool permit   -  Permits the next client to open an session in the access tool.\n"
+                + "    webtool stop     -  Stop the web access tool server, invalidating all the sessions.");
     }
     
     private static void sendStop() {

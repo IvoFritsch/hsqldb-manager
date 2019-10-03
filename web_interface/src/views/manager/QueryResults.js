@@ -63,7 +63,8 @@ export class QueryResults extends Component {
     const {sortedResult, sort} = this.state
     
     return (
-      <div className={`query-results-container ${isLoadingQuery ? 'loading' : ''}`}>
+      <>
+      <div id="hehes" className={`query-results-container ${isLoadingQuery ? 'loading' : ''}`}>
         {rsUpdateMessage &&
           <div className='query-sql-update'>
             <h5>sql info</h5>
@@ -102,6 +103,8 @@ export class QueryResults extends Component {
           </Table>
         }
       </div>
+      <div style={{height:'29px'}}></div>
+      </>
     )
   }
 }

@@ -49,18 +49,20 @@ export class TablesList extends Component {
             <Icon>refresh</Icon>
           </IconButton>
         </Paper>
-        <List className='list-tables-container' component='nav'>
-          {tables && tables.map(t => 
-            <ListItem 
-              key={t.name} 
-              onClick={() => this.selectToQuery(t.name.toLowerCase())} 
-              onContextMenu={e => this.customContextMenu(e, t.name.toLowerCase())}
-              button 
-            >
-              <ListItemText primary={t.name.toLowerCase()} />
-            </ListItem>
-          )}
-        </List>
+        <div style={{overflowY:'auto', overflowX:'hidden', maxHeight:'100%'}}>
+          <List className='list-tables-container' component='nav'>
+            {tables && tables.map(t => 
+              <ListItem 
+                key={t.name} 
+                onClick={() => this.selectToQuery(t.name.toLowerCase())} 
+                onContextMenu={e => this.customContextMenu(e, t.name.toLowerCase())}
+                button 
+              >
+                <ListItemText primary={t.name.toLowerCase()} />
+              </ListItem>
+            )}
+          </List>
+        </div>
       </>
     )
   }

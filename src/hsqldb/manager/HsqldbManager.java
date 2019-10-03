@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.servlet.ServletException;
@@ -43,6 +44,7 @@ import org.hsqldb.cmdline.SqlTool;
 import org.hsqldb.persist.HsqlProperties;
 import org.hsqldb.server.Server;
 import org.hsqldb.server.ServerConstants;
+import webtool.Webtool;
 
 /**
  *
@@ -52,14 +54,14 @@ public class HsqldbManager extends AbstractHandler{
 
     private static Server hsqldbServer;
     private static Map<String,DatabaseDescriptor> deployedDbs = new HashMap<>();
-    public static final int DBS_PORT = 7030;
-    public static final int MANAGER_PORT = 1111;
+    public static final int DBS_PORT = 7031;
+    public static final int MANAGER_PORT = 1112;
     private static volatile boolean accepting = false;
     private static volatile HttpServletResponse currentResponse = null;
     private static File deployed_dbs_File;
     private static File log_output_File;
     private static String jarRoot = "";
-    private static final String NEW_LINE = System.getProperty("line.separator");
+    public static final String NEW_LINE = System.getProperty("line.separator");
     /**
      * @param args the command line arguments
      */
@@ -121,6 +123,7 @@ public class HsqldbManager extends AbstractHandler{
             Command command = new Gson().fromJson(leTodasLinhas(rqst.getReader()), Command.class);
             executeCommand(command);
             rqst.setHandled(true);
+            currentResponse = null;
         }
         try {
             //deployHsqlDatabase("db2");
@@ -171,6 +174,7 @@ public class HsqldbManager extends AbstractHandler{
                 break;
             case "stop":
                 accepting = false;
+                Webtool.stopWebTool(false, false);
                 logInfo("HSQLDB Manager stopped.");
                 shutdownServer();
                 while(!hsqldbServer.isNotRunning());
@@ -212,9 +216,26 @@ public class HsqldbManager extends AbstractHandler{
                     logException(e);
                 }
                 break;
+            case "webtool":
+                dispatchWebToolCommand(c);
+                break;
         }
         
         
+    }
+    
+    private static void dispatchWebToolCommand(Command c){
+        switch(c.getName()){
+            case "start": 
+                Webtool.startWebTool();
+                break;
+            case "permit": 
+                Webtool.setPermitNextSession(true);
+                break;
+            case "stop":
+                Webtool.stopWebTool();
+                break;
+        }
     }
     
     private static void startHsqlServer(){
@@ -242,6 +263,10 @@ public class HsqldbManager extends AbstractHandler{
         hsqldbServer.setErrWriter(null); // can use custom writer
         hsqldbServer.setNoSystemExit(false);
         hsqldbServer.start();
+    }
+    
+    public static Set<String> getDeployedDbsNames(){
+        return deployedDbs.keySet();
     }
     
     private static void shutdownServer(){
@@ -337,6 +362,7 @@ public class HsqldbManager extends AbstractHandler{
     
     private static Menu openSwingMenu = null;
     private static Menu backupDbMenu = null;
+    private static Menu webtoolMenu = null;
     private static TrayIcon trayIcon = null;
     private static void createTrayIcon(){
         if(!SystemTray.isSupported()) return;
@@ -347,11 +373,13 @@ public class HsqldbManager extends AbstractHandler{
        
         openSwingMenu = new Menu("Open swing tool at database");
         backupDbMenu = new Menu("Backup database to user home");
+        webtoolMenu = new Menu("Web access tool");
         updateTrayMenus();
        
         //Add components to pop-up menu
         popup.add(openSwingMenu);
         popup.add(backupDbMenu);
+        popup.add(webtoolMenu);
         popup.addSeparator();
         MenuItem aboutItem = new MenuItem("About HSQLDB Manager");
         aboutItem.addActionListener((ev) -> {
@@ -375,7 +403,8 @@ public class HsqldbManager extends AbstractHandler{
         }
         
     }
-    private static void newTrayNotification(String title, String message, TrayIcon.MessageType type){
+    
+    public static void newTrayNotification(String title, String message, TrayIcon.MessageType type){
         if(trayIcon == null) return;
         trayIcon.displayMessage(title, message, type);
     }
@@ -384,10 +413,11 @@ public class HsqldbManager extends AbstractHandler{
         newTrayNotification(title, message, TrayIcon.MessageType.INFO);
     }
     
-    private static void updateTrayMenus(){
-        if(openSwingMenu == null || backupDbMenu == null) return;
+    public static void updateTrayMenus(){
+        if(openSwingMenu == null || backupDbMenu == null || webtoolMenu == null) return;
         openSwingMenu.removeAll();
         backupDbMenu.removeAll();
+        webtoolMenu.removeAll();
         if(deployedDbs.isEmpty()){
             MenuItem mi = new MenuItem("There's no deployed database.");
             mi.setEnabled(false);
@@ -405,9 +435,22 @@ public class HsqldbManager extends AbstractHandler{
             bdm.addActionListener((ev) -> executeCommand(new Command("backup", n, userHome)));
             backupDbMenu.add(bdm);
         });
+        // Webtool is runnning
+        if(Webtool.getStatus()){
+            MenuItem permitWebtoolSession = new MenuItem("Permit the next webtool session");
+            MenuItem stopWebToolItem = new MenuItem("Stop webtool server");
+            webtoolMenu.add(permitWebtoolSession);
+            permitWebtoolSession.addActionListener((ev) -> executeCommand(new Command("webtool", "permit")));
+            webtoolMenu.add(stopWebToolItem);
+            stopWebToolItem.addActionListener((ev) -> executeCommand(new Command("webtool", "stop")));
+        } else {
+            MenuItem startWebToolItem = new MenuItem("Start webtool server");
+            webtoolMenu.add(startWebToolItem);
+            startWebToolItem.addActionListener((ev) -> executeCommand(new Command("webtool", "start")));
+        }
     }
     
-    private static void logInfo(String log){
+    public static void logInfo(String log){
         
         try {
             FileUtils.write(log_output_File, "INFO      ["+new Date()+" ("+System.currentTimeMillis()+")]: "+log+NEW_LINE, "UTF-8", true);
@@ -416,7 +459,7 @@ public class HsqldbManager extends AbstractHandler{
         }
     }
     
-    private static void logException(Exception ex){
+    public static void logException(Exception ex){
         StringBuilder sb = new StringBuilder("EXCEPTION ["+new Date()+" ("+System.currentTimeMillis()+")]: "+ex.getMessage()+NEW_LINE);
         
         StackTraceElement[] stackTrace = ex.getStackTrace();

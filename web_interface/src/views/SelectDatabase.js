@@ -28,9 +28,14 @@ export class SelectDatabase extends Component {
     return (
       <Grid container direction='column' justify='center' alignItems='center' className='select-databases-container'>
         <img src={hsqldb_logo} alt='hsqldb logo' />
+        
+        {!databases &&
+          <h2>Run <b>hsqlman webtool start</b> to see the deployed databases.</h2>
+        }
+        {databases && <>
         <h2>Select Database</h2>
         <List>
-          {databases && databases.map(d => 
+          {databases.map(d => 
             <ListItem
                 key={d} 
                 onClick={() => SD.setState({database: d})}
@@ -40,6 +45,7 @@ export class SelectDatabase extends Component {
             </ListItem>
           )}
         </List>
+        </>}
       </Grid>
     )
   }
