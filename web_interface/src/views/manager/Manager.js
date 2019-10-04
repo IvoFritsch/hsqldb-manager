@@ -45,11 +45,10 @@ export class Manager extends Component {
   }
 
   render() {
-    const {h_pane_position=200, v_pane_position=280, contextMenu, isLoadingQuery, executionTime, rs} = SD.getState()
-    const qtdRegs = rs ? rs.data.length : undefined;
+    const {h_pane_position=200, v_pane_position=280, contextMenu, isLoadingQuery, executionTime, qtdRegs} = SD.getState();
     let greenLineMsg;
     if(qtdRegs !== undefined){
-      greenLineMsg = `Ready | ${qtdRegs} rows retrieved in ${(executionTime / 100000).toFixed(2)} ms ${qtdRegs >= 100 ? '| Due to maxrows rule of 100, more rows can possibly be returned, use OFFSET to see them' : ''}`;
+      greenLineMsg = `Ready | ${qtdRegs} rows retrieved in ${(executionTime / 100000).toFixed(2)} ms ${qtdRegs >= 100 ? '| More rows can possibly be returned, use OFFSET 100 to see them' : ''}`;
     } else {
       if(executionTime){
         greenLineMsg = `Ready | Query executed in ${(executionTime / 100000).toFixed(2)} ms`;
@@ -87,8 +86,9 @@ export class Manager extends Component {
         </SplitPane>
         
       
-        <div style={{position:'fixed', width: '100%', backgroundColor:'#4caf50', padding:'5px 20px', bottom: '0px', color: 'white', zIndex: '10', height: '19px'}}>
-          {greenLineMsg}
+        <div className='status-bar-container' style={{position:'fixed', backgroundColor:'#4caf50', bottom: '0px', color: 'white', zIndex: '10'}}>
+          <span>{greenLineMsg}</span>
+          <span>Use ctrl + ↑ or ctrl + ↓ to navigate through queries.</span>
         </div>
       </>
     )
