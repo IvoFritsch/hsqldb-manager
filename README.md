@@ -11,7 +11,7 @@ Created and mantained by Haftware SI - 2019
 - Simply, by one single command, backup your database while they're running in production.
 - Many ways to access your databases, use the **sqltool** command to access via SSH terminal. The **swing** command to access via desktop using java swing or even **webtool** to access using your browser, connected to an embedded server that is openned only when you need it.
 - Event logging: everything that happens during HSQLDB Manager executions is logged and can be easily viewed.
-- OS tray icon, all the control can be made via terminal or usin an OS tray icon that is created when the manager start (feature not fully completed yet).
+- OS tray icon, all the control can be made via terminal or using an OS tray icon that is created when the manager start (feature not fully completed yet).
 - Fully portable: All the features are packed in one single jar, that you can simply double click to start the manager.
 
 ## Installation:
@@ -51,6 +51,7 @@ If you access this port you will see the manager ready to access any deployed da
 By default, only the first computer that access the webtool after it's start will be permitted to access the databases, after this, for any additional computer, you will have to run the command `hsqlman webtool permit` to access.
 Soon after all sessions are closed, the webtool server will automatically shutdown, but you can force it to go down typing `hsqlman webtool stop`.
 > All webtool connections have autocommit set to off, remember to always call commit before closing
+
 > To avoid accidental out-of-memory problems, all the webtool connections have the maxRows config set to 100, use OFFSET in your queries to see more rows
 
 All the webtool usage is logged and can be viewed with the **logs** commands.
