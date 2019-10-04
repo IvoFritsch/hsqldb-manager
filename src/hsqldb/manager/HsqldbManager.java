@@ -73,6 +73,7 @@ public class HsqldbManager extends AbstractHandler{
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
+        if(CliUtility.managerAvailabilityCheck()) return;
         
         org.eclipse.jetty.util.log.Log.setLog(new NoLogging());
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(MANAGER_PORT);
