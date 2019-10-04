@@ -81,8 +81,9 @@ export class QueryBox extends Component {
       const response = await HWApiFetch.post(`query/${connectionId}`, {sql})
       
       if(response.status === 'RESULT_SET') {
-        SD.getState().setRs(response.rs)
-        SD.setState({rs: response.rs, executionTime: response.time})
+        const {setRS} = SD.getState()
+        if(setRS) setRS(response.rs)
+        SD.setState({executionTime: response.time})
       }
       if(response.status === 'UPDATE') SD.setState({rsUpdateMessage: response.message, executionTime: response.time})
       if(response.status === 'SQL_ERROR') SD.setState({rsErrorMessage: response.message})

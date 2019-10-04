@@ -73,8 +73,9 @@ export class Manager extends Component {
         </SplitPane>
         
       
-        <div style={{position:'fixed', width: '100%', backgroundColor:'#4caf50', padding:'5px 20px', bottom: '0px', color: 'white', zIndex: '10', height: '19px'}}>
-          {isLoadingQuery ? "Executing..." : (executionTime ? `Query executed in ${(executionTime / 100000).toFixed(2)} ms | Ready to execute` : 'Ready to execute')}
+        <div className='status-bar-container' style={{position:'fixed', backgroundColor:'#4caf50', bottom: '0px', color: 'white', zIndex: '10'}}>
+          <span>{isLoadingQuery ? "Executing..." : (executionTime ? `Query executed in ${(executionTime / 100000).toFixed(2)} ms | Ready to execute` : 'Ready to execute')}</span>
+          <span>Use ctrl + ↑ or crtl + ↓ to navigate through queries.</span>
         </div>
       </>
     )
