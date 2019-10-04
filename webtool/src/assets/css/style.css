@@ -193,7 +193,7 @@ h1, h2, h3, h4, h5 {
   margin-top: 10px;
 }
 
-.status-bar-container { 
+.status-bar-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
