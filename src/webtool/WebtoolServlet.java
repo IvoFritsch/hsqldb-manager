@@ -73,7 +73,6 @@ public class WebtoolServlet extends HttpServlet{
                     supplyApi(req.getMethod()+" "+fullPath.split("/", 3)[2], req, resp);
                     break;
                 case "static":
-                    System.out.println("STATIC");
                     break;
             }
         } catch(Exception e){
@@ -91,6 +90,20 @@ public class WebtoolServlet extends HttpServlet{
                 continue;
             }
             response.addHeader("Set-Cookie", String.format("%s; %s", header, "SameSite=None"));
+        }
+    }
+    
+    public static void main(String[] args) {
+        WebtoolServlet webtoolServlet = new WebtoolServlet();
+        webtoolServlet.heh();
+    }
+    
+    public void heh(){
+        try{
+            InputStream resourceAsStream = getClass().getResourceAsStream("/webtool/file.txt"); 
+            System.out.println(resourceAsStream);
+        } catch (Exception e){
+            e.printStackTrace();
         }
     }
     
@@ -341,6 +354,7 @@ public class WebtoolServlet extends HttpServlet{
            cc.conn = conn;
            cc.meta = conn.getMetaData();
            cc.stmt = conn.createStatement();
+           cc.stmt.setMaxRows(100);
            session.setAttribute(connId, cc);
            session.setAttribute("permitted_"+connId, true);
            Webtool.putConnection(cc);

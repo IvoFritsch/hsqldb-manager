@@ -8,6 +8,8 @@ export class TablesList extends Component {
     tables: undefined
   }
 
+  mustRender = true;
+
   componentDidMount() {
     this.getTables()
     SD.setState({refreshTables: this.getTables})
@@ -17,6 +19,7 @@ export class TablesList extends Component {
     const {connectionId} = SD.getState()
     const {status, tables} = await HWApiFetch.get(`metadata/${connectionId}`)
     if(status !== 'OK') return
+    this.mustRender = true;
     this.setState({tables})
   }
 
@@ -35,10 +38,14 @@ export class TablesList extends Component {
     }})
   }
 
+  shouldComponentUpdate(){
+    return this.mustRender;
+  }
+
   render() {
     const {database} = SD.getState()
     const {tables} = this.state
-
+    this.mustRender = false;
     return (
       <>
         <Paper className='database-name-container'>

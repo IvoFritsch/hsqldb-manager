@@ -1,0 +1,2 @@
+INFO      [Fri Oct 04 10:11:21 BRT 2019 (1570194681234)]: HSQLDB Manager started.
+INFO      [Fri Oct 04 10:11:37 BRT 2019 (1570194697256)]: HSQLDB Manager stopped.

@@ -45,7 +45,21 @@ export class Manager extends Component {
   }
 
   render() {
-    const {h_pane_position=200, v_pane_position=280, contextMenu, isLoadingQuery, executionTime} = SD.getState()
+    const {h_pane_position=200, v_pane_position=280, contextMenu, isLoadingQuery, executionTime, rs} = SD.getState()
+    const qtdRegs = rs ? rs.data.length : undefined;
+    let greenLineMsg;
+    if(qtdRegs !== undefined){
+      greenLineMsg = `Ready | ${qtdRegs} rows retrieved in ${(executionTime / 100000).toFixed(2)} ms ${qtdRegs >= 100 ? '| Due to maxrows rule of 100, more rows can possibly be returned, use OFFSET to see them' : ''}`;
+    } else {
+      if(executionTime){
+        greenLineMsg = `Ready | Query executed in ${(executionTime / 100000).toFixed(2)} ms`;
+      } else {
+        greenLineMsg = 'Ready';
+      }
+    }
+    if(isLoadingQuery){
+      greenLineMsg =  'Executing...';
+    }
 
     return (
       <>
@@ -74,7 +88,7 @@ export class Manager extends Component {
         
       
         <div style={{position:'fixed', width: '100%', backgroundColor:'#4caf50', padding:'5px 20px', bottom: '0px', color: 'white', zIndex: '10', height: '19px'}}>
-          {isLoadingQuery ? "Executing..." : (executionTime ? `Query executed in ${(executionTime / 100000).toFixed(2)} ms | Ready to execute` : 'Ready to execute')}
+          {greenLineMsg}
         </div>
       </>
     )

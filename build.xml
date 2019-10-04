@@ -80,12 +80,12 @@
         <copy todir="${store.dir}/" >  
                 <fileset dir="" includes="hsqlman"/>  
                 <fileset dir="" includes="hsqlman.bat"/>  
-                <fileset dir="" includes="acl.txt"/>  
-                <fileset dir="" includes="hsqldb-logo.png"/>  
+                <fileset dir="" includes="acl.txt"/>
         </copy>
         <jar destfile="${store.dir}/temp_final.jar" filesetmanifest="skip">
             <zipgroupfileset dir="dist" includes="*.jar"/>
             <zipgroupfileset dir="dist/lib" includes="*.jar"/>
+            <fileset dir="" includes="hsqldb-logo.png"/>
             <manifest>
                 <attribute name="Main-Class" value="${main.class}"/>
             </manifest>

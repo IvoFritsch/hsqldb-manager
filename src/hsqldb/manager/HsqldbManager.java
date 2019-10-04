@@ -18,7 +18,10 @@ import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -29,8 +32,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -62,6 +68,7 @@ public class HsqldbManager extends AbstractHandler{
     private static File log_output_File;
     private static String jarRoot = "";
     public static final String NEW_LINE = System.getProperty("line.separator");
+    public static final boolean RUNNING_FROM_JAR = HsqldbManager.class.getResource("HsqldbManager.class").toString().startsWith("jar:");
     /**
      * @param args the command line arguments
      */
@@ -124,11 +131,6 @@ public class HsqldbManager extends AbstractHandler{
             executeCommand(command);
             rqst.setHandled(true);
             currentResponse = null;
-        }
-        try {
-            //deployHsqlDatabase("db2");
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
     }
     
@@ -366,9 +368,12 @@ public class HsqldbManager extends AbstractHandler{
     private static TrayIcon trayIcon = null;
     private static void createTrayIcon(){
         if(!SystemTray.isSupported()) return;
+        try {
+            trayIcon = new TrayIcon(ImageIO.read(HsqldbManager.getResource("hsqldb-logo.png")).getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+        } catch (IOException ex) {
+            return;
+        }
         final PopupMenu popup = new PopupMenu();
-        trayIcon =
-                new TrayIcon(Toolkit.getDefaultToolkit().getImage(jarRoot+"hsqldb-logo.png").getScaledInstance(16, 16, Image.SCALE_SMOOTH));
         final SystemTray tray = SystemTray.getSystemTray();
        
         openSwingMenu = new Menu("Open swing tool at database");
@@ -470,6 +475,20 @@ public class HsqldbManager extends AbstractHandler{
             FileUtils.write(log_output_File, sb.toString(), "UTF-8", true);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+    
+    public static InputStream getResource(String name){
+        if(name.contains("..")) return null;
+        if(RUNNING_FROM_JAR){
+            if(!name.startsWith("/")) name = "/" + name;
+            return HsqldbManager.class.getResourceAsStream(name);
+        } else {
+            try {
+                return new FileInputStream(new File(name));
+            } catch (FileNotFoundException ex) {
+                return null;
+            }
         }
     }
 }
