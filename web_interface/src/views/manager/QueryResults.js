@@ -10,6 +10,43 @@ export class QueryResults extends Component {
       column: undefined,
       direction: undefined,
     },
+    renderedTable: null
+  }
+
+  componentDidMount() {
+    SD.setState({setRs: this.setRs})
+  }
+
+  setRs = (rs) => {
+    const {sortedResult, sort} = this.state
+
+    if(!rs) return
+    
+    this.setState({renderedTable: (
+      <Table size='small'>
+        <TableHead>
+          <TableRow>
+            {(rs.headers || []).map((h, index) => (
+              <TableCell key={h}>
+                <TableSortLabel className='query-results-header' active={sort.column === h} direction={sort.column === h ? sort.direction : undefined} onClick={() => this.sortTable(h, index)}>
+                  {h} <h6>({rs.types[index]})</h6>
+                </TableSortLabel>
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {((sort.column ? sortedResult : rs.data) || []).map((row, index) =>
+            <TableRow hover key={index}>
+              {row.map((cell, index)=> 
+                <TableCell key={index} className='result-cell' title={cell}>{cell}</TableCell>
+              )}
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    )})
   }
 
   sortTable = (column, index) => {
@@ -60,7 +97,7 @@ export class QueryResults extends Component {
 
   render() {
     const {isLoadingQuery, rs, rsUpdateMessage, rsErrorMessage} = SD.getState()
-    const {sortedResult, sort} = this.state
+    const {sortedResult, sort, renderedTable: RenderedTable} = this.state
     
     return (
       <>
@@ -77,31 +114,7 @@ export class QueryResults extends Component {
             <h4>{rsErrorMessage}</h4>
           </div>
         }
-        {rs &&
-          <Table size='small'>
-            <TableHead>
-              <TableRow>
-                {(rs.headers || []).map((h, index) => (
-                  <TableCell key={h}>
-                    <TableSortLabel className='query-results-header' active={sort.column === h} direction={sort.column === h ? sort.direction : undefined} onClick={() => this.sortTable(h, index)}>
-                      {h} <h6>({rs.types[index]})</h6>
-                    </TableSortLabel>
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {((sort.column ? sortedResult : rs.data) || []).map((row, index) =>
-                <TableRow hover key={index}>
-                  {row.map((cell, index)=> 
-                    <TableCell key={index} className='result-cell' title={cell}>{cell}</TableCell>
-                  )}
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        }
+        {RenderedTable}
       </div>
       <div style={{height:'29px'}}></div>
       </>
