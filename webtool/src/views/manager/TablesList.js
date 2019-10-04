@@ -38,17 +38,20 @@ export class TablesList extends Component {
     }})
   }
 
-  shouldComponentUpdate(){
+  shouldComponentUpdate(nexProps) {
+    if(this.props.uncommittedWork !== nexProps.uncommittedWork) this.mustRender = true
     return this.mustRender;
   }
 
   render() {
     const {database} = SD.getState()
     const {tables} = this.state
+    const {uncommittedWork} = this.props
     this.mustRender = false;
+    
     return (
       <>
-        <Paper className='database-name-container'>
+        <Paper className={`database-name-container ${uncommittedWork && 'uncommitted'}`}>
           <span>
             {database}
           </span>

@@ -78,15 +78,15 @@ export class QueryBox extends Component {
 
     try {
       SD.setState({sql}, true)
-      const response = await HWApiFetch.post(`query/${connectionId}`, {sql})
+      // const response = await HWApiFetch.post(`query/${connectionId}`, {sql})
       
-      if(response.status === 'RESULT_SET') {
-        const {setRS} = SD.getState()
-        if(setRS) setRS(response.rs)
-        SD.setState({executionTime: response.time, qtdRegs: response.rs ? response.rs.data.length : undefined})
-      }
-      if(response.status === 'UPDATE') SD.setState({rsUpdateMessage: response.message, executionTime: response.time, qtdRegs: undefined})
-      if(response.status === 'SQL_ERROR') SD.setState({rsErrorMessage: response.message, qtdRegs: undefined})
+      // if(response.status === 'RESULT_SET') {
+      //   const {setRS} = SD.getState()
+      //   if(setRS) setRS(response.rs)
+      //   SD.setState({executionTime: response.time, qtdRegs: response.rs ? response.rs.data.length : undefined})
+      // }
+      // if(response.status === 'UPDATE') SD.setState({rsUpdateMessage: response.message, executionTime: response.time, qtdRegs: undefined})
+      // if(response.status === 'SQL_ERROR') SD.setState({rsErrorMessage: response.message, qtdRegs: undefined})
       
       sql = sql.toLowerCase()
       this.saveCommands(sql)
@@ -130,16 +130,36 @@ export class QueryBox extends Component {
     executedQueries = [...executedQueries, ...queries]
     if(executedQueries.length > 100) executedQueries = executedQueries.slice(executedQueries.length-100)
     SD.setState({executedQueries}, true)
+    this.verifyUncommittedWork(queries)
   }
 
   verifyQueryIndex = (sql, index) => {
-    const commands = ['select', 'insert', 'update', 'delete', 'create', 'alter', 'drop']
+    const commands = ['select', 'insert', 'update', 'delete', 'create', 'alter', 'drop', 'commit', 'rollback']
     for(const command of commands) {
       const i = sql.indexOf(command)
       if(i > -1 && i < index) index = i
     }
     return index
   }
+
+  verifyUncommittedWork = (queries) => {
+    let {uncommittedWork} = SD.getState()
+    const commands = ['insert', 'update', 'delete']
+    
+    queries.forEach(query => {
+      commands.forEach(command => {
+        if(query.includes(command)) uncommittedWork = true
+      })
+      if(query.includes('commit') || query.includes('rollback')) uncommittedWork = false
+    })
+
+    if(uncommittedWork) window.addEventListener('beforeunload', this.beforeUnloadMessage)
+    else window.removeEventListener('beforeunload', this.beforeUnloadMessage)
+    
+    SD.setState({uncommittedWork})
+  }
+
+  beforeUnloadMessage = e => e.returnValue = `You have uncommitted work. Are you sure you want to leave?`
 
   render() {
     const {sql=''} = this.state

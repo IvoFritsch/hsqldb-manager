@@ -45,7 +45,7 @@ export class Manager extends Component {
   }
 
   render() {
-    const {h_pane_position=200, v_pane_position=280, contextMenu, isLoadingQuery, executionTime, qtdRegs} = SD.getState();
+    const {h_pane_position=200, v_pane_position=280, contextMenu, isLoadingQuery, executionTime, qtdRegs, uncommittedWork} = SD.getState();
     let greenLineMsg;
     if(qtdRegs !== undefined){
       greenLineMsg = `Ready | ${qtdRegs} rows retrieved in ${(executionTime / 100000).toFixed(2)} ms ${qtdRegs >= 100 ? '| More rows can possibly be returned, use OFFSET 100 to see them' : ''}`;
@@ -71,7 +71,7 @@ export class Manager extends Component {
           maxSize={-120}
           pane1Style={{marginBottom: '29px', paddingTop:'60px'}}
         >
-          <TablesList />
+          <TablesList uncommittedWork={uncommittedWork} />
           <SplitPane 
             split='horizontal'
             defaultSize={h_pane_position}

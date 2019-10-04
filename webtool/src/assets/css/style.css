@@ -103,6 +103,10 @@ h1, h2, h3, h4, h5 {
   top: 0px;
 }
 
+.database-name-container.uncommitted { 
+  background-color: #e53935 !important;
+}
+
 .run-sql-button {
   position: absolute !important;
   bottom: 20px;

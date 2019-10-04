@@ -7,7 +7,7 @@ import Simplerdux from 'simplerdux'
 import HWApiFetch from 'hw-api-fetch'
  
 HWApiFetch.init({
-  host: 'http://192.168.0.11:35888/api/',
+  host: '/api/',
   cookiesToHeader: ['JSESSIONID'],
   log: true,
   fetchProperties: {
