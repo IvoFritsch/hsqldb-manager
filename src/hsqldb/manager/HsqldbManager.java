@@ -60,8 +60,8 @@ public class HsqldbManager extends AbstractHandler{
 
     private static Server hsqldbServer;
     private static Map<String,DatabaseDescriptor> deployedDbs = new HashMap<>();
-    public static final int DBS_PORT = 7031;
-    public static final int MANAGER_PORT = 1112;
+    public static final int DBS_PORT = 7030;
+    public static final int MANAGER_PORT = 1111;
     private static volatile boolean accepting = false;
     private static volatile HttpServletResponse currentResponse = null;
     private static File deployed_dbs_File;
@@ -300,6 +300,10 @@ public class HsqldbManager extends AbstractHandler{
     private static void undeployHsqlDatabase(Command c){
         if(!deployedDbs.containsKey(c.getName())){
             sendResponse("There's no deployed database with the name '"+c.getName()+"'.");
+            return;
+        }
+        if(Webtool.getStatus()){
+            sendResponse("Webtool is currently running, cannot undeploy any database.");
             return;
         }
         deployedDbs.remove(c.getName());

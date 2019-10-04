@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +54,7 @@ public class WebtoolServlet extends HttpServlet{
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.addHeader("Access-Control-Allow-Credentials", "true");
-        resp.addHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
+        if(!HsqldbManager.RUNNING_FROM_JAR) resp.addHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
         resp.addHeader("Access-Control-Allow-Headers", "Content-Type, jsessionid");
         resp.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
     }
@@ -60,25 +62,73 @@ public class WebtoolServlet extends HttpServlet{
     private void doMethod(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setCharacterEncoding("UTF-8");
         resp.addHeader("Access-Control-Allow-Credentials", "true");
-        resp.addHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
+        if(!HsqldbManager.RUNNING_FROM_JAR) resp.addHeader("Access-Control-Allow-Origin", req.getHeader("Origin"));
         resp.addHeader("Access-Control-Allow-Headers", "Content-Type, jsessionid");
         resp.addHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
         try{
             String fullPath = req.getServletPath();
             if(!fullPath.startsWith("/"))fullPath = "/" + fullPath;
-            if(!fullPath.endsWith("/"))fullPath += "/";
+            if(fullPath.equals("/") || fullPath.equals("/index.html")) fullPath = "/static/index.html";
             String masterPath = fullPath.split("/")[1];
+            if(!masterPath.equals("static") && !fullPath.endsWith("/"))fullPath += "/";
             switch(masterPath){
                 case "api":
                     supplyApi(req.getMethod()+" "+fullPath.split("/", 3)[2], req, resp);
                     break;
                 case "static":
+                    supplyStatic(fullPath.split("/", 3)[2], req, resp);
                     break;
             }
         } catch(Exception e){
         }
-        addSameSiteCookieAttribute(resp);
+        if(!HsqldbManager.RUNNING_FROM_JAR) addSameSiteCookieAttribute(resp);
     }
+    
+    private void supplyStatic(String resource, HttpServletRequest request, HttpServletResponse response){
+        
+        if(!HsqldbManager.RUNNING_FROM_JAR) resource = "webtool_build/" + resource;
+        resource = "webtool_build/" + resource;
+        
+        
+        try{
+            response.addHeader("Access-Control-Allow-Origin", "*");
+            response.addHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+            OutputStream outStream;
+            // if you want to use a relative path to context root:
+            try (InputStream fileStream = HsqldbManager.getResource(resource)) {
+                if(fileStream == null) {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    return;
+                }
+                // obtains ServletContext
+                ServletContext context = getServletContext();
+                // gets MIME type of the file
+                String mimeType = context.getMimeType("a."+resource.substring(resource.lastIndexOf(".")));
+                if (mimeType == null) {
+                    // set to binary type if MIME mapping not found
+                    mimeType = "application/octet-stream";
+                }   // modifies response
+                response.setContentType(mimeType);
+                response.setHeader("Cache-Control", "public, max-age=31536000");
+                // forces download
+                String headerKey = "Content-Disposition";
+                String headerValue = "inline";
+                response.setHeader(headerKey, headerValue);
+                // obtains response's output stream
+                outStream = response.getOutputStream();
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                int totalSize = 0;
+                while ((bytesRead = fileStream.read(buffer)) != -1) {
+                    totalSize += bytesRead;
+                    outStream.write(buffer, 0, bytesRead);
+                }
+                response.setContentLength(totalSize);
+            }
+            outStream.close();
+        } catch(Exception e){}
+    }
+    
     
     private void addSameSiteCookieAttribute(HttpServletResponse response) {
         Collection<String> headers = response.getHeaders("Set-Cookie");
@@ -90,20 +140,6 @@ public class WebtoolServlet extends HttpServlet{
                 continue;
             }
             response.addHeader("Set-Cookie", String.format("%s; %s", header, "SameSite=None"));
-        }
-    }
-    
-    public static void main(String[] args) {
-        WebtoolServlet webtoolServlet = new WebtoolServlet();
-        webtoolServlet.heh();
-    }
-    
-    public void heh(){
-        try{
-            InputStream resourceAsStream = getClass().getResourceAsStream("/webtool/file.txt"); 
-            System.out.println(resourceAsStream);
-        } catch (Exception e){
-            e.printStackTrace();
         }
     }
     

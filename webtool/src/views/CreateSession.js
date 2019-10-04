@@ -11,7 +11,7 @@ export class CreateSession extends Component {
   }
 
   componentDidMount() {
-    this.initInterval = setInterval(this.initSession, 500)
+    this.initInterval = setInterval(this.initSession, 1000)
   }
 
   componentWillUnmount() {

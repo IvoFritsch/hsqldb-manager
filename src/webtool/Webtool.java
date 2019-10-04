@@ -97,6 +97,8 @@ public class Webtool implements Runnable {
             status = false;
             server.stop();
             server = null;
+            openConnections = null;
+            activityVerifier = null;
             HsqldbManager.sendResponse("Webtool server stopped succesfully.");
             HsqldbManager.logInfo("Web access tool stopped.");
             if(showNotif) HsqldbManager.newTrayNotification("Webtool server stopped", inactivity ? "It stopped due to inactivity." : "", TrayIcon.MessageType.INFO);

@@ -37,7 +37,7 @@ public class CliUtility {
     private final static int SECOND_ARG = 2;
     
     public static void main(String[] args){
-        args = new String[]{"sqltool", "bestbit-platform"};
+        //args = new String[]{"sqltool", "bestbit-platform"};
         System.out.println("HSQLMAN - HSQL Databases Manager - Haftware SI 2019");
         if(args.length == 0){
             printHelp();

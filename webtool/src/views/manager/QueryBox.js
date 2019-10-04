@@ -78,15 +78,15 @@ export class QueryBox extends Component {
 
     try {
       SD.setState({sql}, true)
-      // const response = await HWApiFetch.post(`query/${connectionId}`, {sql})
+      const response = await HWApiFetch.post(`query/${connectionId}`, {sql})
       
-      // if(response.status === 'RESULT_SET') {
-      //   const {setRS} = SD.getState()
-      //   if(setRS) setRS(response.rs)
-      //   SD.setState({executionTime: response.time, qtdRegs: response.rs ? response.rs.data.length : undefined})
-      // }
-      // if(response.status === 'UPDATE') SD.setState({rsUpdateMessage: response.message, executionTime: response.time, qtdRegs: undefined})
-      // if(response.status === 'SQL_ERROR') SD.setState({rsErrorMessage: response.message, qtdRegs: undefined})
+      if(response.status === 'RESULT_SET') {
+        const {setRS} = SD.getState()
+        if(setRS) setRS(response.rs)
+        SD.setState({executionTime: response.time, qtdRegs: response.rs ? response.rs.data.length : undefined})
+      }
+      if(response.status === 'UPDATE') SD.setState({rsUpdateMessage: response.message, executionTime: response.time, qtdRegs: undefined})
+      if(response.status === 'SQL_ERROR') SD.setState({rsErrorMessage: response.message, qtdRegs: undefined})
       
       sql = sql.toLowerCase()
       this.saveCommands(sql)

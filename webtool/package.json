@@ -1,5 +1,6 @@
 {
   "name": "web_interface",
+  "homepage" : "/static",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -19,6 +20,7 @@
   "scripts": {
     "start": "set PORT=3031 && react-scripts start",
     "build": "react-scripts build",
+    "postbuild": "(if exist \"../webtool_build\" RD /S /Q \"../webtool_build\") && xcopy build \"../webtool_build/webtool_build\\\" /s/h/e/k/c",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

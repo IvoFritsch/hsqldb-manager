@@ -9,7 +9,7 @@ import HWApiFetch from 'hw-api-fetch'
 HWApiFetch.init({
   host: '/api/',
   cookiesToHeader: ['JSESSIONID'],
-  log: true,
+  log: false,
   fetchProperties: {
     credentials: 'include',
   }

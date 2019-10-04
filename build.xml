@@ -86,6 +86,7 @@
             <zipgroupfileset dir="dist" includes="*.jar"/>
             <zipgroupfileset dir="dist/lib" includes="*.jar"/>
             <fileset dir="" includes="hsqldb-logo.png"/>
+            <fileset dir="webtool_build" includes="**"/>
             <manifest>
                 <attribute name="Main-Class" value="${main.class}"/>
             </manifest>

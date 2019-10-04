@@ -9,8 +9,14 @@ export class SelectDatabase extends Component {
     databases: undefined
   }
 
+  interval = undefined;
+
   componentDidMount() {
-    this.getDatabases()
+    this.interval = setInterval(this.getDatabases, 1000)
+  }
+
+  componentWillUnmount(){
+    clearInterval(this.interval);
   }
   
   getDatabases = async () => {
@@ -18,7 +24,6 @@ export class SelectDatabase extends Component {
       const databases = await HWApiFetch.get('list')
       this.setState({databases})
     } catch (error) {
-      setTimeout(this.getDatabases, 1000)
     }
   }
 
@@ -28,12 +33,13 @@ export class SelectDatabase extends Component {
     return (
       <Grid container direction='column' justify='center' alignItems='center' className='select-databases-container'>
         <img src={hsqldb_logo} alt='hsqldb logo' />
+        <h1>HSQLDB Manager Webtool</h1>
         
         {!databases &&
           <h2>Run <b>hsqlman webtool start</b> to see the deployed databases.</h2>
         }
         {databases && <>
-        <h2>Select Database</h2>
+        <h2>Select Database to continue:</h2>
         <List>
           {databases.map(d => 
             <ListItem
