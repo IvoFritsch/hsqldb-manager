@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package webtool;
+package hsqldb.webtool;
 
 import hsqldb.manager.HsqldbManager;
 import hsqldb.manager.NoLogging;

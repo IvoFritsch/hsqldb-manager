@@ -50,7 +50,7 @@ import org.hsqldb.cmdline.SqlTool;
 import org.hsqldb.persist.HsqlProperties;
 import org.hsqldb.server.Server;
 import org.hsqldb.server.ServerConstants;
-import webtool.Webtool;
+import hsqldb.webtool.Webtool;
 
 /**
  *
