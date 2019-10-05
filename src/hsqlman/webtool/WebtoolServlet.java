@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hsqldb.webtool;
+package hsqlman.webtool;
 
-import hsqldb.manager.HsqldbManager;
+import hsqlman.manager.HsqldbManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hsqldb.webtool;
+package hsqlman.webtool;
 
-import hsqldb.manager.HsqldbManager;
+import hsqlman.manager.HsqldbManager;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Statement;
 import javax.servlet.http.HttpSession;
-import static hsqldb.webtool.Webtool.CONNECTION_TIMEOUT;
+import static hsqlman.webtool.Webtool.CONNECTION_TIMEOUT;
 
 /**
  *

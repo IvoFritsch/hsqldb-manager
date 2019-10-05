@@ -3,18 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hsqldb.manager;
+package hsqlman.manager;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import hsqldb.cli.CliUtility;
+import hsqlman.cli.CliUtility;
 import java.awt.AWTException;
 import java.awt.Image;
 import java.awt.Menu;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
-import java.awt.Toolkit;
 import java.awt.TrayIcon;
 import java.io.BufferedReader;
 import java.io.File;
@@ -32,8 +31,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
@@ -50,7 +47,7 @@ import org.hsqldb.cmdline.SqlTool;
 import org.hsqldb.persist.HsqlProperties;
 import org.hsqldb.server.Server;
 import org.hsqldb.server.ServerConstants;
-import hsqldb.webtool.Webtool;
+import hsqlman.webtool.Webtool;
 
 /**
  *

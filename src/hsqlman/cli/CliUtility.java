@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hsqldb.cli;
+package hsqlman.cli;
 
 import com.google.gson.Gson;
-import hsqldb.manager.Command;
-import hsqldb.manager.HsqldbManager;
+import hsqlman.manager.Command;
+import hsqlman.manager.HsqldbManager;
 import java.awt.GraphicsEnvironment;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -275,7 +275,7 @@ public class CliUtility {
         }
         try {
             System.out.println("Starting the HSQLDB Manager...");
-            Process manager = new ProcessBuilder("java", "-cp", jarPath, "hsqldb.manager.HsqldbManager").start();
+            Process manager = new ProcessBuilder("java", "-cp", jarPath, "hsqlman.manager.HsqldbManager").start();
             int timeout = 0;
             while(timeout < 15){
                 Thread.sleep(333);

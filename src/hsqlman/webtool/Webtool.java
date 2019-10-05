@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hsqldb.webtool;
+package hsqlman.webtool;
 
-import hsqldb.manager.HsqldbManager;
-import hsqldb.manager.NoLogging;
+import hsqlman.manager.HsqldbManager;
+import hsqlman.manager.NoLogging;
 import java.awt.TrayIcon;
 import java.lang.reflect.Field;
 import java.sql.Types;
@@ -111,6 +111,10 @@ public class Webtool implements Runnable {
     }
 
     public static void setPermitNextSession(boolean permitNextSession) {
+        if(!status) {
+            HsqldbManager.sendResponse("Webtool is not running.");
+            return;
+        }
         Webtool.permitNextSession = permitNextSession;
         if(permitNextSession){
             HsqldbManager.sendResponse("The next client will be permitted to connect.");

@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package hsqldb.manager;
+package hsqlman.manager;
 
 import org.eclipse.jetty.util.log.Logger;
 
