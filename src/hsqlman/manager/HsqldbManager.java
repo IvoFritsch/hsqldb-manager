@@ -64,6 +64,7 @@ public class HsqldbManager extends AbstractHandler{
     private static File deployed_dbs_File;
     private static File log_output_File;
     private static String jarRoot = "";
+    private static boolean useAcl = true;
     public static final String NEW_LINE = System.getProperty("line.separator");
     public static final boolean RUNNING_FROM_JAR = HsqldbManager.class.getResource("HsqldbManager.class").toString().startsWith("jar:");
     /**
@@ -93,6 +94,9 @@ public class HsqldbManager extends AbstractHandler{
         }
         log_output_File = new File(jarRoot+"logs.txt");
         createTrayIcon();
+        if(args.length > 0 && "--no-acl".equals(args[0])){
+            useAcl = false;
+        }
         try{
             startHsqlServer();
             if(!deployedDbs.isEmpty() && hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
@@ -249,7 +253,7 @@ public class HsqldbManager extends AbstractHandler{
         deployedDbs.forEach((n,dd) -> {
             p.setProperty("server.database."+i.i,"file:"+dd.path+"/"+n);
             p.setProperty("server.dbname."+i.i,n);
-            p.setProperty("server.acl",jarRoot+"acl.txt");
+            if(useAcl) p.setProperty("server.acl",jarRoot+"acl.txt");
             i.i++;
         });
         try {
