@@ -23,6 +23,9 @@ The HSQLDB Manager is an all-in-one jar database, you dont need to have nothing 
 4. Everything's ready
 5. You may now execute all the commands bellow
 
+## Usage as Docker container
+The HSQLDB Manager can run as a Docker container hosted in [DockerHub](https://hub.docker.com/r/ivofritsch/hsqldb-manager)
+
 ## Usage:
 
 All the usage is made by the tray icon or by commands in terminal/cmd, calling the `hsqlman.bat` for Windows or `hsqlman` for Linux, the currently supported commands are:

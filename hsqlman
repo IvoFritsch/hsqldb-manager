@@ -1,6 +1,5 @@
 #!/bin/bash
 BASEDIR=$(dirname "$0")
-echo $BASEDIR
 exec java -cp "$BASEDIR/hsqldb-manager.jar" hsqlman.cli.CliUtility $1 $2 $3
 
 
