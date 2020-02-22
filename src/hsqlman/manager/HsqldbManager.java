@@ -99,11 +99,16 @@ public class HsqldbManager extends AbstractHandler{
         }
         log_output_File = new File(jarRoot+"logs.txt");
         createTrayIcon();
+        System.out.println("Registrando shutdownhook...");
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 System.out.println("Parando HSQLMAN...");
-                CliUtility.sendCommand(new Command("stop"));
+                accepting = false;
+                Webtool.stopWebTool(false, false);
+                logInfo("HSQLDB Manager stopped.");
+                shutdownServer();
+                while(!hsqldbServer.isNotRunning());
                 System.out.println("HSQLMAN parou...");
                 System.exit(0);
             }
