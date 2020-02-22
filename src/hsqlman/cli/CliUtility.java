@@ -299,7 +299,7 @@ public class CliUtility {
     }
     
     // HTTP GET request
-    private static String sendCommand(Command c){
+    public static String sendCommand(Command c){
         if(!managerAvailabilityCheck()){
             System.err.println("The manager is not running, start it with the 'start' command");
             return null;

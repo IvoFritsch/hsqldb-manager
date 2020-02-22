@@ -72,12 +72,17 @@ public class HsqldbManager extends AbstractHandler{
      */
     public static void main(String[] args) throws Exception {
         if(CliUtility.managerAvailabilityCheck()) return;
+        if(args.length > 0 && "--no-acl".equals(args[0])){
+            useAcl = false;
+        }
         
         org.eclipse.jetty.util.log.Log.setLog(new NoLogging());
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(MANAGER_PORT);
-        // Inidica que somente aceita conexões vindas da máquina local (localhost)
-        ((ServerConnector)server.getConnectors()[0]).setPort(MANAGER_PORT);
-        ((ServerConnector)server.getConnectors()[0]).setHost("localhost");
+        if(useAcl){
+            // Inidica que somente aceita conexões vindas da máquina local (localhost)
+            ((ServerConnector)server.getConnectors()[0]).setPort(MANAGER_PORT);
+            ((ServerConnector)server.getConnectors()[0]).setHost("localhost");
+        }
         try {
             jarRoot = new File(CliUtility.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
             if(!jarRoot.endsWith("/")) jarRoot += "/";
@@ -94,9 +99,14 @@ public class HsqldbManager extends AbstractHandler{
         }
         log_output_File = new File(jarRoot+"logs.txt");
         createTrayIcon();
-        if(args.length > 0 && "--no-acl".equals(args[0])){
-            useAcl = false;
-        }
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                System.out.println("Parando HSQLMAN...");
+                CliUtility.sendCommand(new Command("stop"));
+                System.out.println("HSQLMAN parou...");
+            }
+         });
         try{
             startHsqlServer();
             if(!deployedDbs.isEmpty() && hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
