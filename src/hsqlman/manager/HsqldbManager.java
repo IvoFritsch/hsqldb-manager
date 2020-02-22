@@ -105,6 +105,7 @@ public class HsqldbManager extends AbstractHandler{
                 System.out.println("Parando HSQLMAN...");
                 CliUtility.sendCommand(new Command("stop"));
                 System.out.println("HSQLMAN parou...");
+                System.exit(0);
             }
          });
         try{
