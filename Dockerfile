@@ -8,5 +8,5 @@ RUN rm /hsqlman/acl.txt
 RUN echo "{\"db\":{\"name\":\"db\",\"path\":\"/var/db\"}}" > /hsqlman/deployed_dbs.db
 RUN chmod +x /hsqlman/hsqlman
 RUN cat /hsqlman/hsqlman
-ENTRYPOINT ["java", "-jar", "./hsqldb-manager.jar", "--no-acl"]
+CMD ["java", "-jar", "./hsqldb-manager.jar", "--no-acl"]
 EXPOSE 7030 1111 35888
