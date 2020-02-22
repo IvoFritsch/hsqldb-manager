@@ -1,6 +1,7 @@
 FROM java
 ENV PATH="/hsqlman:${PATH}"
-RUN wget https://github.com/IvoFritsch/hsqldb-manager/raw/master/hsqldb-manager.zip
+COPY ./hsqldb-manager.zip hsqldb-manager.zip
+#RUN wget https://github.com/IvoFritsch/hsqldb-manager/raw/master/hsqldb-manager.zip
 RUN unzip hsqldb-manager.zip -d /hsqlman
 WORKDIR /hsqlman
 RUN rm /hsqlman/acl.txt
