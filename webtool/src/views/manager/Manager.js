@@ -48,10 +48,10 @@ export class Manager extends Component {
     const {h_pane_position=200, v_pane_position=280, contextMenu, isLoadingQuery, executionTime, qtdRegs, uncommittedWork} = SD.getState();
     let greenLineMsg;
     if(qtdRegs !== undefined){
-      greenLineMsg = `Ready | ${qtdRegs} rows retrieved in ${(executionTime / 100000).toFixed(2)} ms ${qtdRegs >= 100 ? '| More rows can possibly be returned, use OFFSET 100 to see them' : ''}`;
+      greenLineMsg = `Ready | ${qtdRegs} rows retrieved in ${(executionTime / 1000000).toFixed(3)} ms ${qtdRegs >= 100 ? '| More rows can possibly be returned, use OFFSET 100 to see them' : ''}`;
     } else {
       if(executionTime){
-        greenLineMsg = `Ready | Query executed in ${(executionTime / 100000).toFixed(2)} ms`;
+        greenLineMsg = `Ready | Query executed in ${(executionTime / 1000000).toFixed(3)} ms`;
       } else {
         greenLineMsg = 'Ready';
       }
