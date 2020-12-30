@@ -67,6 +67,20 @@ public class HsqldbManager extends AbstractHandler{
     private static boolean useAcl = true;
     public static final String NEW_LINE = System.getProperty("line.separator");
     public static final boolean RUNNING_FROM_JAR = HsqldbManager.class.getResource("HsqldbManager.class").toString().startsWith("jar:");
+    public static final Thread shutdownHook = new Thread() {
+            @Override
+            public void run() {
+                System.out.println("Parando HSQLMAN...");
+                accepting = false;
+                Webtool.stopWebTool(false, false);
+                logInfo("HSQLDB Manager stopped.");
+                shutdownServer();
+                while(!hsqldbServer.isNotRunning());
+                System.out.println("HSQLMAN parou...");
+                System.exit(0);
+            }
+         };
+    
     /**
      * @param args the command line arguments
      */
@@ -100,19 +114,7 @@ public class HsqldbManager extends AbstractHandler{
         log_output_File = new File(jarRoot+"logs.txt");
         createTrayIcon();
         System.out.println("Registrando shutdownhook...");
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                System.out.println("Parando HSQLMAN...");
-                accepting = false;
-                Webtool.stopWebTool(false, false);
-                logInfo("HSQLDB Manager stopped.");
-                shutdownServer();
-                while(!hsqldbServer.isNotRunning());
-                System.out.println("HSQLMAN parou...");
-                System.exit(0);
-            }
-         });
+        Runtime.getRuntime().addShutdownHook(shutdownHook);
         try{
             startHsqlServer();
             if(!deployedDbs.isEmpty() && hsqldbServer.getState() != ServerConstants.SERVER_STATE_ONLINE){
@@ -198,6 +200,7 @@ public class HsqldbManager extends AbstractHandler{
                 logInfo("HSQLDB Manager stopped.");
                 shutdownServer();
                 while(!hsqldbServer.isNotRunning());
+                Runtime.getRuntime().removeShutdownHook(shutdownHook);
                 System.exit(0);
                 break;
             case "backup":
