@@ -67,9 +67,11 @@ public class HsqldbManager extends AbstractHandler{
     private static boolean useAcl = true;
     public static final String NEW_LINE = System.getProperty("line.separator");
     public static final boolean RUNNING_FROM_JAR = HsqldbManager.class.getResource("HsqldbManager.class").toString().startsWith("jar:");
+    private static volatile boolean shuttingDown = false;
     public static final Thread shutdownHook = new Thread() {
             @Override
             public void run() {
+                if(shuttingDown) return;
                 System.out.println("Parando HSQLMAN...");
                 accepting = false;
                 Webtool.stopWebTool(false, false);
@@ -93,7 +95,7 @@ public class HsqldbManager extends AbstractHandler{
         org.eclipse.jetty.util.log.Log.setLog(new NoLogging());
         org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server(MANAGER_PORT);
         if(useAcl){
-            // Inidica que somente aceita conexões vindas da máquina local (localhost)
+            // Indica que somente aceita conexões vindas da máquina local (localhost)
             ((ServerConnector)server.getConnectors()[0]).setPort(MANAGER_PORT);
             ((ServerConnector)server.getConnectors()[0]).setHost("localhost");
         }
@@ -195,6 +197,7 @@ public class HsqldbManager extends AbstractHandler{
                 sendResponse(pathToSend);
                 break;
             case "stop":
+                shuttingDown = true;
                 accepting = false;
                 Webtool.stopWebTool(false, false);
                 logInfo("HSQLDB Manager stopped.");
