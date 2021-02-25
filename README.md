@@ -2,7 +2,7 @@
 An standalone all-in-one jar Database + Manager utility to easily manage your HSQLDB Databases, running all of them in one single server and port.
 One single jar file contains everything you need to create mantain and access HSQLDB database.
 
-Created and mantained by Haftware SI - 2019
+Created and mantained by Haftware SI - 2020
 
 ## Features:
 
